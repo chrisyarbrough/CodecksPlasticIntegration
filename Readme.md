@@ -2,10 +2,10 @@
 Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [PlasticSCM](https://www.plasticscm.com/).
 
 # Usage #
-1) Download or build the CodecksExtension library.
+1) [Download](https://github.com/chrisyarbrough/CodecksPlasticIntegration/releases/latest/download/codecks.zip) or build the CodecksExtension library.
 
-2) Place the plugin and its dependencies in the extensions directory of the PlasticSCM installation.
-   With the default installation on Windows, the extension should be placed at:
+2) Place the codecks folder (containing the plugin and its dependencies) in the extensions directory of the PlasticSCM installation.
+   With the default installation on Windows, the path should look like this:
     > C:\Program Files\PlasticSCM5\client\extensions\codecks\CodecksExtension.dll
 
    ![](Images/PlasticSCM_Configuration.png "PlasticSCM Preferences Window")
@@ -13,12 +13,14 @@ Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [Plasti
 3) In the customextensions.conf file add the following line: 
     > Codecks=extensions/codecks/CodecksExtension.dll
 
-    The configuration file can be found at:
+    You might require admin permission to edit the file. The path is:
     > C:\Program Files\PlasticSCM5\client\customextensions.conf
 
 4) Open the preferences in the PlasticSCM GUI and configure the Codecks extension with your personal settings.
 
    ![](Images/PlasticSCM_Preferences.png "PlasticSCM Preferences Window")
+   
+   Note that 'Account Name' is the subdomain of your organization used for the Codecks web frontend.
 
 # Additional Resources
 The process for developing and configuring PlasticSCM extensions is documented 
@@ -44,10 +46,9 @@ The beta version (PlasticX) should also work.
 
 The codecks extension depends on libraries provided by PlasticSCM (e.g. issuetrackerinterface.dll).
 In theory, these dependencies should be provided by the host process (the Plastic GUI), however,
-the new beta GUI PlasticX does not load the utils.dll. For this reason it was decided to 
-simply copy paste the libraries during development and deploy them right next to the extension.
+the new beta GUI PlasticX does not load the utils.dll. For this reason, it was decided to 
+simply copy-paste the libraries during development and deploy them right next to the extension.
 See the 'Libraries' folder in the repository.
-
 
 The solution includes a "Start Host" configuration which will build the extension and copy it directly to
 the default PlasticSCM installation path and also launch the GUI client for interactive testing and debugging.
