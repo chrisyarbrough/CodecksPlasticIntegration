@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+    <PropertyGroup>
+        <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+        <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+        <ProjectGuid>{2851C4CE-A93B-4B96-81D7-BB804D6A18AC}</ProjectGuid>
+        <ProjectTypeGuids>{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+        <OutputType>Library</OutputType>
+        <AppDesignerFolder>Properties</AppDesignerFolder>
+        <RootNamespace>CodecksExtensionTests</RootNamespace>
+        <AssemblyName>CodecksExtensionTests</AssemblyName>
+        <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+        <FileAlignment>512</FileAlignment>
+        <LangVersion>7</LangVersion>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+      <OutputPath>bin\Release\</OutputPath>
+    </PropertyGroup>
+    <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+      <OutputPath>bin\Debug\</OutputPath>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="NUnit" Version="3.13.2" />
+        <Reference Include="Microsoft.CSharp" />
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Include="Properties\AssemblyInfo.cs" />
+        <Compile Include="Source\CardIDConverterTests.cs" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\CodecksExtension\CodecksExtension.csproj">
+        <Project>{36151070-25b7-4376-a3c6-b873441a1f23}</Project>
+        <Name>CodecksExtension</Name>
+      </ProjectReference>
+    </ItemGroup>
+    <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+    <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+         Other similar extension points exist, see Microsoft.Common.targets.
+    <Target Name="BeforeBuild">
+    </Target>
+    <Target Name="AfterBuild">
+    </Target>
+    -->
+
+</Project>
