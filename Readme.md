@@ -1,6 +1,8 @@
 # Codecks Integration for PlasticSCM #
 Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [PlasticSCM](https://www.plasticscm.com/).
 
+![](Images/ExtensionPreview.png "Extension Preview")
+
 # Usage #
 1) [Download](https://github.com/chrisyarbrough/CodecksPlasticIntegration/releases/latest/download/codecks.zip) or build the CodecksExtension library.
 
