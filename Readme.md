@@ -1,9 +1,10 @@
 # Codecks Integration for PlasticSCM #
-Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [PlasticSCM](https://www.plasticscm.com/).
 
 ![](Images/ExtensionPreview.png "Extension Preview")
 
-# Usage #
+Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [PlasticSCM](https://www.plasticscm.com/).
+
+# Getting Started #
 1) [Download](https://github.com/chrisyarbrough/CodecksPlasticIntegration/releases/latest/download/codecks.zip) or build the CodecksExtension library.
 
 2) Place the codecks folder (containing the plugin and its dependencies) in the extensions directory of the PlasticSCM installation.
@@ -32,7 +33,7 @@ Codecks provides the [web API](https://manual.codecks.io/api/)
 which is used by the extension to fetch task information and post status updates.
 As of February 2022, the API is in beta and not officially supported.
 
-# Development and Building from Source
+# Developing and Building from Source
 Since this was started as a personal project, 
 the development setup may not be ideal when dealing with issues such as handling different PlasticSCM versions, 
 user-specific installation paths or storing secret user data for testing.
