@@ -3,6 +3,7 @@
 	using Codice.Client.IssueTracker;
 	using Codice.Utils;
 	using Newtonsoft.Json.Linq;
+	using System;
 	using System.Collections.Generic;
 
 	/// <summary>
@@ -84,20 +85,30 @@
 
 		private bool TryConnect(IssueTrackerConfiguration config)
 		{
-			// This may fail and throw because of invalid credentials.
-			// Letting the exception bubble up to the Plastic client
-			// is likely better error reporting than trying to parse the exceptions
-			// and convert them to a nicer-looking message.
-			service.Login(
-				config.GetValue(API_BASE_URL),
-				config.GetValue(ACCOUNT_NAME),
-				config.GetValue(EMAIL),
-				CryptoServices.GetDecryptedPassword(config.GetValue(PASSWORD))
-			);
+			try
+			{
+				// This may fail and throw because of invalid credentials.
+				// However, the exception doesn't contain useful information
+				// since it's either Internal Server Error or Bad Request.
+				service.Login(
+					config.GetValue(API_BASE_URL),
+					config.GetValue(ACCOUNT_NAME),
+					config.GetValue(EMAIL),
+					CryptoServices.GetDecryptedPassword(config.GetValue(PASSWORD))
+				);
 
-			// To make sure the connection actually works,
-			// send a simple request with the logged-in user.
-			return service.LoadAccountID().Length > 0;
+				// To make sure the connection actually works,
+				// send a simple request with the logged-in user.
+				return service.LoadAccountID().Length > 0;
+			}
+			catch (Exception)
+			{
+				// Another reason to swallow the exception here, is that the
+				// connect call can be made by Plastic in situations where the user
+				// doesn't expect a login attempt to happen. For example, when 
+				// switching between different workspaces.
+				return false;
+			}
 		}
 
 		/// <summary>
