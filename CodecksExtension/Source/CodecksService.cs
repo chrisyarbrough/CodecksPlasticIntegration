@@ -15,7 +15,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 	public class CodecksService
 	{
 		private string token;
-		private string url;
+		private string baseURL;
 		private string accountName;
 
 		private static readonly ILog log = LogManager.GetLogger("CodecksService");
@@ -31,15 +31,21 @@ namespace Xarbrough.CodecksPlasticIntegration
 			string email,
 			string password)
 		{
-			// Because users configure the base-url in the preferences UI,
-			// this input data should be sanitized for robustness.
-			if (url.EndsWith("/") == false)
-				url += "/";
+			url = SanitizeURL(url);
 
 			byte[] data = SerializeCredentials(email, password);
 			this.token = FetchRequestToken(url, accountName, data);
-			this.url = url;
+			this.baseURL = url;
 			this.accountName = accountName;
+		}
+
+		private static string SanitizeURL(string url)
+		{
+			// The base URL must be in the exact format: 'https://api.codecks.io/'
+			// because we combine it with different endpoints later (e.g. 'update').
+			// To make it easier for users to input the url, be forgiving about
+			// missing or too many slashes at the end.
+			return url.TrimEnd('/') + "/";
 		}
 
 		private static byte[] SerializeCredentials(string email, string password)
@@ -101,7 +107,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 		{
 			ThrowIfNotLoggedIn();
 
-			var request = (HttpWebRequest)WebRequest.Create(url);
+			var request = (HttpWebRequest)WebRequest.Create(baseURL);
 			SetupValidRequest(request);
 			WriteBody(request, query);
 
@@ -118,7 +124,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 			ThrowIfNotLoggedIn();
 
 			var request = (HttpWebRequest)WebRequest.Create(
-				url + "dispatch/cards/update");
+				baseURL + "dispatch/cards/update");
 
 			SetupValidRequest(request);
 			WriteBody(request, body);

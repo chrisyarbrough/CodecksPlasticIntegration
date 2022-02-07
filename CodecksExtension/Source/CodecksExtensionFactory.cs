@@ -78,6 +78,9 @@
 				IsGlobal = true
 			};
 
+			// Users currently don't have a reason to change the base url,
+			// but in the future, Codecks might release a self-hosted version that 
+			// is still backwards compatible in regards to individual endpoints.
 			yield return new IssueTrackerConfigurationParameter
 			{
 				Name = CodecksExtension.API_BASE_URL,
