@@ -48,7 +48,7 @@
 			{
 				// Overwrite the default values with the stored configuration.
 				if (TryGetValue(config, parameter.Name, out string storedValue))
-					parameter.Value = storedValue;
+					parameter.Value = storedValue.Trim();
 
 				parameters.Add(parameter);
 			}
@@ -70,10 +70,14 @@
 
 		private static IEnumerable<IssueTrackerConfigurationParameter> CreateDefaultParameters()
 		{
+			// Allows users to not use any branch prefix by not supplying a default value.
+			// If the extension would define one here, it would be impossible to detect
+			// whether the user wanted to set it to an empty string or
+			// if this is the first time the config is loaded.
 			yield return new IssueTrackerConfigurationParameter
 			{
 				Name = CodecksExtension.BRANCH_PREFIX_KEY,
-				Value = "cd-",
+				Value = string.Empty,
 				Type = IssueTrackerConfigurationParameterType.BranchPrefix,
 				IsGlobal = true
 			};
