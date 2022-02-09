@@ -22,6 +22,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <OutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="issuetrackerinterface, Version=5.4.16.0, Culture=neutral, PublicKeyToken=a107c9c6e34c8876">
@@ -47,7 +48,6 @@
     <Compile Include="Source\CodecksService.cs" />
     <Compile Include="Source\LoggedIssueTrackerExtension.cs" />
     <Compile Include="Source\LogStringExtensions.cs" />
-    <Compile Include="Source\UserLookup.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
