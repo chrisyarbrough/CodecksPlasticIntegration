@@ -273,9 +273,8 @@
 		/// </summary>
 		public void OpenTaskExternally(string taskId)
 		{
-			// TODO: Implement UpdateLinkedTasksToChangeset.
-			//const string browserURL = "";
-			//System.Diagnostics.Process.Start(browserURL);
+			string browserURL = "https://" + config.GetValue(ACCOUNT_NAME) + ".codecks.io/card/" + taskId;
+			System.Diagnostics.Process.Start(browserURL);
 		}
 
 		public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
@@ -299,10 +298,20 @@
 			return new List<PlasticTask>();
 		}
 
-		// Called when a changeset is created.
+		/// <summary>
+		/// Called when a changeset is created and reports to the issue tracker.
+		/// </summary>
 		public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)
 		{
-			// TODO: Implement LogCheckinResult.
+			// It seems possible to implement different scenarios here, each of which
+			// would require some additional user settings:
+			// - Add a comment to the card simply stating that a checkin was performed.
+			// - Include meta info (changeset comment, time, etc).
+			// - Task on changeset mode: Set the card status to e.g. review or done.
+			// - Task on branch mode: Add status comments or detect merge to main.
+			// The last idea appears difficult to implement. We would have to define
+			// what kind of merge means "feature done", since it could be a more
+			// involved merge-pipeline etc. Probably best to only support changeset mode.
 		}
 	}
 }
