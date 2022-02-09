@@ -114,7 +114,28 @@
 		{
 			const string subQuery =
 				"{\\\"status\\\":\\\"not_started\\\",\\\"visibility\\\":\\\"default\\\"}";
+
 			return FetchAndCacheCards(subQuery);
+		}
+
+		private Dictionary<string, string> PopulateEmailUserLookup()
+		{
+			var idToMail = new Dictionary<string, string>();
+
+			string getAllUsers =
+				"{\"query\":{\"account(" +
+				service.LoadAccountID() +
+				")\":[{\"roles\":[{\"user\":[\"id\",\"name\",\"fullName\",{\"primaryEmail\":[\"email\"]}]}]}]}}";
+
+			dynamic data = service.PostQuery(getAllUsers);
+			foreach (JProperty property in data.userEmail)
+			{
+				string id = (string)property.Value["userId"];
+				string mail = (string)property.Value["email"];
+				idToMail.Add(id, mail);
+			}
+
+			return idToMail;
 		}
 
 		/// <summary>
@@ -123,6 +144,9 @@
 		/// </summary>
 		public List<PlasticTask> GetPendingTasks(string assigneeEmail)
 		{
+			if (!service.IsLoggedIn)
+				return new List<PlasticTask>();
+
 			string userId = service.FetchUserId(assigneeEmail);
 
 			string subQuery = "{\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
@@ -134,13 +158,10 @@
 
 		private List<PlasticTask> FetchAndCacheCards(string cardSubQuery)
 		{
-			// TODO: This method is both command and query and will cause issues later.
-			// For example, when we want to implement LoadTasks or GetTasksForBranches.
-			// So far, we assume that cards will be loaded before the cache is used,
-			// but this assumption will likely break. Maybe simply don't cache the lookups.
+			var lookup = PopulateEmailUserLookup();
 			IEnumerable<JProperty> cards = service.LoadCards(cardSubQuery);
 			PopulateCardGuidLookup(cards);
-			return BuildTasks(cards);
+			return BuildTasks(cards, lookup);
 		}
 
 		private void PopulateCardGuidLookup(IEnumerable<JProperty> cards)
@@ -157,20 +178,22 @@
 		/// Receives the data model sent by the Codecks API (a list of card objects)
 		/// and converts each to a task representation for Plastic.
 		/// </summary>
-		private List<PlasticTask> BuildTasks(IEnumerable<JProperty> cards)
+		private List<PlasticTask> BuildTasks(
+			IEnumerable<JProperty> cards,
+			Dictionary<string, string> idToEmail)
 		{
 			var tasks = new List<PlasticTask>();
 
 			foreach (JProperty property in cards)
-				tasks.Add(BuildTask(property));
+				tasks.Add(BuildTask(property, idToEmail));
 
 			return tasks;
 		}
 
-		private PlasticTask BuildTask(JProperty property)
+		private PlasticTask BuildTask(JProperty property, Dictionary<string, string> idToEmail)
 		{
 			string assigneeId = (string)property.Value["assigneeId"];
-			string email = assigneeId != null ? service.FetchUserEmail(assigneeId) : string.Empty;
+			string email = assigneeId != null ? idToEmail[assigneeId] : string.Empty;
 
 			return new PlasticTask
 			{
@@ -214,10 +237,12 @@
 
 				dynamic data = service.PostQuery(query);
 
+				var idToEmail = PopulateEmailUserLookup();
+
 				// Return the first result, since the card collection should only contain a single one.
 				foreach (JProperty property in data.card)
 				{
-					return BuildTask(property);
+					return BuildTask(property, idToEmail);
 				}
 				return null;
 			}
@@ -292,9 +317,11 @@
 
 			string subQuery = "{\\\"accountSeq\\\":[" + string.Join(",", taskIds) + "]}";
 
+			var idToEmail = PopulateEmailUserLookup();
+
 			foreach (var card in service.LoadCards(subQuery))
 			{
-				tasks.Add(BuildTask(card));
+				tasks.Add(BuildTask(card, idToEmail));
 			}
 
 			return tasks;
