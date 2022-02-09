@@ -112,12 +112,9 @@
 		/// </summary>
 		public List<PlasticTask> GetPendingTasks()
 		{
-			const string query =
-				"{\"query\":{\"_root\":[{\"account\":" +
-				"[{\"cards({\\\"status\\\":\\\"not_started\\\",\\\"visibility\\\":\\\"default\\\"})\":" +
-				"[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"deckId\",\"accountSeq\"]}]}]}}";
-
-			return FetchAndCacheCards(query);
+			const string subQuery =
+				"{\\\"status\\\":\\\"not_started\\\",\\\"visibility\\\":\\\"default\\\"}";
+			return FetchAndCacheCards(subQuery);
 		}
 
 		/// <summary>
@@ -128,22 +125,20 @@
 		{
 			string userId = service.FetchUserId(assigneeEmail);
 
-			string query =
-				"{\"query\":{\"_root\":[{\"account\":[{\"cards({\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
-				userId +
-				"\\\"]}],\\\"visibility\\\":\\\"default\\\",\\\"status\\\":\\\"not_started\\\"})\":" +
-				"[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"deckId\",\"accountSeq\"]}]}]}}";
+			string subQuery = "{\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
+			                  userId +
+			                  "\\\"]}],\\\"visibility\\\":\\\"default\\\",\\\"status\\\":\\\"not_started\\\"}";
 
-			return FetchAndCacheCards(query);
+			return FetchAndCacheCards(subQuery);
 		}
 
-		private List<PlasticTask> FetchAndCacheCards(string query)
+		private List<PlasticTask> FetchAndCacheCards(string cardSubQuery)
 		{
 			// TODO: This method is both command and query and will cause issues later.
 			// For example, when we want to implement LoadTasks or GetTasksForBranches.
 			// So far, we assume that cards will be loaded before the cache is used,
 			// but this assumption will likely break. Maybe simply don't cache the lookups.
-			IEnumerable<JProperty> cards = LoadCodecksCards(query);
+			IEnumerable<JProperty> cards = service.LoadCards(cardSubQuery);
 			PopulateCardGuidLookup(cards);
 			return BuildTasks(cards);
 		}
@@ -174,7 +169,8 @@
 
 		private PlasticTask BuildTask(JProperty property)
 		{
-			string email = service.FetchUserEmail((string)property.Value["assigneeId"]);
+			string assigneeId = (string)property.Value["assigneeId"];
+			string email = assigneeId != null ? service.FetchUserEmail(assigneeId) : string.Empty;
 
 			return new PlasticTask
 			{
@@ -184,15 +180,6 @@
 				Status = (string)property.Value["status"],
 				Owner = email
 			};
-		}
-
-		private IEnumerable<JProperty> LoadCodecksCards(string query)
-		{
-			dynamic data = service.PostQuery(query);
-
-			// The 'card' object contains multiple cards, but the Codecks API uses the singular name.
-			foreach (JProperty property in data.card)
-				yield return property;
 		}
 
 		/// <summary>
@@ -273,7 +260,8 @@
 		/// </summary>
 		public void OpenTaskExternally(string taskId)
 		{
-			string browserURL = "https://" + config.GetValue(ACCOUNT_NAME) + ".codecks.io/card/" + taskId;
+			string browserURL =
+				"https://" + config.GetValue(ACCOUNT_NAME) + ".codecks.io/card/" + taskId;
 			System.Diagnostics.Process.Start(browserURL);
 		}
 
@@ -294,8 +282,22 @@
 
 		public List<PlasticTask> LoadTasks(List<string> taskIds)
 		{
-			// TODO: Implement LoadTasks.
-			return new List<PlasticTask>();
+			var tasks = new List<PlasticTask>();
+
+			if (taskIds.Count == 0)
+				return tasks;
+
+			// Expecting only a single card in the response,
+			// this would ideally directly index the first JProperty.
+
+			string subQuery = "{\\\"accountSeq\\\":[" + string.Join(",", taskIds) + "]}";
+
+			foreach (var card in service.LoadCards(subQuery))
+			{
+				tasks.Add(BuildTask(card));
+			}
+
+			return tasks;
 		}
 
 		/// <summary>
