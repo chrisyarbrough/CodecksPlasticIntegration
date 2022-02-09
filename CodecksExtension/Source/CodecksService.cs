@@ -160,18 +160,21 @@ namespace Xarbrough.CodecksPlasticIntegration
 		[System.Diagnostics.Conditional("DEBUG")]
 		private void ThrowIfNotLoggedIn()
 		{
-			if (string.IsNullOrEmpty(token))
+			if (!IsLoggedIn)
 			{
 				throw new InvalidOperationException(
 					"Requests can only be sent after successful login.");
 			}
 		}
 
+		public bool IsLoggedIn => !string.IsNullOrEmpty(token);
+
 		public string LoadAccountID()
 		{
 			ThrowIfNotLoggedIn();
 			const string query = "{\"query\":{\"_root\":[{\"account\":[\"name\",\"id\"]}]}}";
-			return PostQuery(query)._root.account;
+			dynamic result = PostQuery(query);
+			return result._root.account;
 		}
 
 		public string FetchUserEmail(string userId)
