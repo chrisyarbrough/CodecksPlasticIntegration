@@ -30,17 +30,12 @@
 		/// of this class will be created and passed a fresh copy of the config.
 		/// </summary>
 		private readonly IssueTrackerConfiguration config;
-		
+
 		/// <summary>
 		/// A helper class to interface with the Codecks API.
 		/// </summary>
 		private readonly CodecksService service;
-		
-		/// <summary>
-		/// Maps bidirectionally between user guid and email.
-		/// </summary>
-		private readonly UserLookup userLookup = new UserLookup();
-		
+
 		/// <summary>
 		/// Converts the card 'accountSeq' value to a three-letter
 		/// display label and vice-versa.
@@ -131,12 +126,11 @@
 		/// </summary>
 		public List<PlasticTask> GetPendingTasks(string assigneeEmail)
 		{
-			PopulateEmailUserLookup();
-			string id = userLookup.EmailToID(assigneeEmail);
+			string userId = service.FetchUserId(assigneeEmail);
 
 			string query =
 				"{\"query\":{\"_root\":[{\"account\":[{\"cards({\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
-				id +
+				userId +
 				"\\\"]}],\\\"visibility\\\":\\\"default\\\",\\\"status\\\":\\\"not_started\\\"})\":" +
 				"[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"deckId\",\"accountSeq\"]}]}]}}";
 
@@ -173,18 +167,23 @@
 			var tasks = new List<PlasticTask>();
 
 			foreach (JProperty property in cards)
-			{
-				tasks.Add(new PlasticTask
-				{
-					Id = idConverter.IntToSeq((int)property.Value["accountSeq"]),
-					Title = (string)property.Value["title"],
-					Description = (string)property.Value["content"],
-					Status = (string)property.Value["status"],
-					Owner = userLookup.IDToEmail((string)property.Value["assigneeId"])
-				});
-			}
+				tasks.Add(BuildTask(property));
 
 			return tasks;
+		}
+
+		private PlasticTask BuildTask(JProperty property)
+		{
+			string email = service.FetchUserEmail((string)property.Value["assigneeId"]);
+
+			return new PlasticTask
+			{
+				Id = idConverter.IntToSeq((int)property.Value["accountSeq"]),
+				Title = (string)property.Value["title"],
+				Description = (string)property.Value["content"],
+				Status = (string)property.Value["status"],
+				Owner = email
+			};
 		}
 
 		private IEnumerable<JProperty> LoadCodecksCards(string query)
@@ -196,38 +195,61 @@
 				yield return property;
 		}
 
-		private void PopulateEmailUserLookup()
-		{
-			userLookup.Clear();
-
-			string getAllUsers =
-				"{\"query\":{\"account(" +
-				service.LoadAccountID() +
-				")\":[{\"roles\":[{\"user\":[\"id\",\"name\",\"fullName\",{\"primaryEmail\":[\"email\"]}]}]}]}}";
-
-			dynamic data = service.PostQuery(getAllUsers);
-			foreach (JProperty property in data.userEmail)
-			{
-				string id = (string)property.Value["userId"];
-				string mail = (string)property.Value["email"];
-				userLookup.Add(id, mail);
-			}
-		}
-
 		/// <summary>
 		/// Called when selecting a branch in the Branches view and/or refreshing
 		/// the tab in the "Extended Information" sidebar.
 		/// </summary>
 		public PlasticTask GetTaskForBranch(string fullBranchName)
 		{
-			// TODO: Implement GetTaskForBranch.
 			// Full branch name example: "/main/cd-1rj"
-			// The other official codecks extensions internally call a helper method
-			// ExtensionServices.GetTaskIdFromFullBranchName.
-			// However, the task ID in our case is the user-facing card ID label (e.g. 16r),
-			// but again, what we need is either the accountSeq or guid.
-			
-			return new PlasticTask();
+			string branchName = FullBranchNameToShortName(fullBranchName);
+			string branchPrefix = config.GetValue(BRANCH_PREFIX_KEY);
+
+			// If a branch prefix is set, branches not starting with it, are ignored.
+			// But if the branch prefix is not set, it becomes impossible to predict
+			// whether the branch name is a valid task ID or not. So simply try sending it.
+			if (branchName.StartsWith(branchPrefix) == false)
+				return null;
+
+			try
+			{
+				string taskID = branchName.Substring(startIndex: branchPrefix.Length);
+
+				// This will also throw if the taskID is not convertible.
+				// E.g. 'main' doesn't work because 'm' is not part of the converter letters.
+				int accountSeq = idConverter.SeqToInt(taskID);
+
+				string query =
+					"{\"query\":{\"_root\":[{\"account\":" +
+					"[{\"cards({\\\"accountSeq\\\":" + accountSeq +
+					",\\\"visibility\\\":\\\"default\\\"})\":" +
+					"[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"accountSeq\"]}]}]}}";
+
+				dynamic data = service.PostQuery(query);
+
+				// Return the first result, since the card collection should only contain a single one.
+				foreach (JProperty property in data.card)
+				{
+					return BuildTask(property);
+				}
+				return null;
+			}
+			catch (Exception)
+			{
+				// Many things could have gone wrong here, but hopefully it only detects
+				// the case of a branch name without prefix which isn't part of the issue
+				// tracking system and hence no task should be displayed.
+				return null;
+			}
+		}
+
+		private static string FullBranchNameToShortName(string fullBranchName)
+		{
+			int index = fullBranchName.LastIndexOf("/", StringComparison.Ordinal);
+			if (index >= 0)
+				return fullBranchName.Substring(index + 1);
+
+			return fullBranchName;
 		}
 
 		public void MarkTaskAsOpen(string taskId, string assignee)
@@ -252,19 +274,23 @@
 		public void OpenTaskExternally(string taskId)
 		{
 			// TODO: Implement UpdateLinkedTasksToChangeset.
-			const string browserURL = "";
-			System.Diagnostics.Process.Start(browserURL);
+			//const string browserURL = "";
+			//System.Diagnostics.Process.Start(browserURL);
 		}
 
 		public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
 		{
 			// TODO: Implement UpdateLinkedTasksToChangeset.
 		}
-		
+
 		public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
 		{
-			// TODO: Implement GetTasksForBranches.
-			return new Dictionary<string, PlasticTask>();
+			var result = new Dictionary<string, PlasticTask>(fullBranchNames.Count);
+
+			foreach (string fullBranchName in fullBranchNames)
+				result.Add(fullBranchName, GetTaskForBranch(fullBranchName));
+
+			return result;
 		}
 
 		public List<PlasticTask> LoadTasks(List<string> taskIds)

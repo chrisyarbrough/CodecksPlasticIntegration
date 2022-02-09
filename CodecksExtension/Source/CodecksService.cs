@@ -156,6 +156,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 			stream.Write(bytes, 0, bytes.Length);
 		}
 
+		[System.Diagnostics.Conditional("DEBUG")]
 		private void ThrowIfNotLoggedIn()
 		{
 			if (string.IsNullOrEmpty(token))
@@ -170,6 +171,39 @@ namespace Xarbrough.CodecksPlasticIntegration
 			ThrowIfNotLoggedIn();
 			const string query = "{\"query\":{\"_root\":[{\"account\":[\"name\",\"id\"]}]}}";
 			return PostQuery(query)._root.account;
+		}
+
+		public string FetchUserEmail(string userId)
+		{
+			ThrowIfNotLoggedIn();
+			string query =
+				"{\"query\":{\"user(" +
+				userId +
+				")\":[\"fullName\",{\"primaryEmail\":[\"email\"]}]}}";
+
+			dynamic result = PostQuery(query);
+			string emailID = result.user[userId].primaryEmail;
+			return result.userEmail[emailID].email;
+		}
+
+		public string FetchUserId(string email)
+		{
+			ThrowIfNotLoggedIn();
+			string getAllUsers =
+				"{\"query\":{\"account(" +
+				LoadAccountID() +
+				")\":[{\"roles\":[{\"user\":[\"id\",\"name\",\"fullName\",{\"primaryEmail\":[\"email\"]}]}]}]}}";
+
+			dynamic data = PostQuery(getAllUsers);
+			foreach (JProperty property in data.userEmail)
+			{
+				string mail = (string)property.Value["email"];
+				if (mail == email)
+				{
+					return (string)property.Value["userId"];
+				}
+			}
+			throw new ArgumentException(nameof(email));
 		}
 	}
 }
