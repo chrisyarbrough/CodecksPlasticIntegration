@@ -4,6 +4,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 	using Newtonsoft.Json;
 	using Newtonsoft.Json.Linq;
 	using System;
+	using System.Collections.Generic;
 	using System.IO;
 	using System.Net;
 	using System.Text;
@@ -204,6 +205,28 @@ namespace Xarbrough.CodecksPlasticIntegration
 				}
 			}
 			throw new ArgumentException(nameof(email));
+		}
+
+		public IEnumerable<JProperty> LoadCards(string cardSubQuery)
+		{
+			string query =
+				"{\"query\":{\"_root\":[{\"account\":[{\"cards(" +
+				cardSubQuery +
+				")\":[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"accountSeq\"]}]}]}}";
+
+			dynamic result;
+			try
+			{
+				result = PostQuery(query);
+			}
+			catch (Exception)
+			{
+				yield break;
+			}
+
+			// The Codecks API uses the singular name 'card', but this object is a collection.
+			foreach (var card in result.card)
+				yield return card;
 		}
 	}
 }
