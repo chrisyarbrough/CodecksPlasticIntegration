@@ -45,7 +45,8 @@
 		/// <summary>
 		/// Maps between [Key: accountSeq] and [Value: guid].
 		/// </summary>
-		private readonly Dictionary<string, string> cardGuidLookup = new Dictionary<string, string>();
+		private readonly Dictionary<string, string> cardGuidLookup =
+			new Dictionary<string, string>();
 
 		internal CodecksExtension(IssueTrackerConfiguration config)
 		{
