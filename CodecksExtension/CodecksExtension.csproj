@@ -48,6 +48,7 @@
     <Compile Include="Source\CodecksService.cs" />
     <Compile Include="Source\LoggedIssueTrackerExtension.cs" />
     <Compile Include="Source\LogStringExtensions.cs" />
+    <Compile Include="Source\BranchName.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
