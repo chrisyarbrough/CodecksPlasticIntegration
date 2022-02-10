@@ -114,7 +114,7 @@
 		public List<PlasticTask> GetPendingTasks()
 		{
 			const string subQuery =
-				"{\\\"status\\\":\\\"not_started\\\",\\\"visibility\\\":\\\"default\\\"}";
+				"{\\\"visibility\\\":\\\"default\\\"}";
 
 			return FetchAndCacheCards(subQuery);
 		}
@@ -152,7 +152,7 @@
 
 			string subQuery = "{\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
 			                  userId +
-			                  "\\\"]}],\\\"visibility\\\":\\\"default\\\",\\\"status\\\":\\\"not_started\\\"}";
+			                  "\\\"]}],\\\"visibility\\\":\\\"default\\\"}";
 
 			return FetchAndCacheCards(subQuery);
 		}
