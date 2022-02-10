@@ -212,56 +212,51 @@
 		public PlasticTask GetTaskForBranch(string fullBranchName)
 		{
 			// Full branch name example: "/main/cd-1rj"
-			string branchName = FullBranchNameToShortName(fullBranchName);
 			string branchPrefix = config.GetValue(BRANCH_PREFIX_KEY);
 
-			// If a branch prefix is set, branches not starting with it, are ignored.
-			// But if the branch prefix is not set, it becomes impossible to predict
-			// whether the branch name is a valid task ID or not. So simply try sending it.
-			if (branchName.StartsWith(branchPrefix) == false)
-				return null;
-
-			try
+			if (BranchName.TryExtractTaskFromFullName(
+				fullBranchName, branchPrefix, out string taskId))
 			{
-				string taskID = branchName.Substring(startIndex: branchPrefix.Length);
-
-				// This will also throw if the taskID is not convertible.
-				// E.g. 'main' doesn't work because 'm' is not part of the converter letters.
-				int accountSeq = idConverter.SeqToInt(taskID);
-
-				string query =
-					"{\"query\":{\"_root\":[{\"account\":" +
-					"[{\"cards({\\\"accountSeq\\\":" + accountSeq +
-					",\\\"visibility\\\":\\\"default\\\"})\":" +
-					"[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"accountSeq\"]}]}]}}";
-
-				dynamic data = service.PostQuery(query);
-
-				var idToEmail = PopulateEmailUserLookup();
-
-				// Return the first result, since the card collection should only contain a single one.
-				foreach (JProperty property in data.card)
+				try
 				{
-					return BuildTask(property, idToEmail);
+					// The parsed task ID is not validated at this point, but
+					// the only way to do so is to try a request with it.
+					return FetchTaskFromId(taskId);
 				}
-				return null;
+				catch (Exception)
+				{
+					return null;
+				}
 			}
-			catch (Exception)
+			else
 			{
-				// Many things could have gone wrong here, but hopefully it only detects
-				// the case of a branch name without prefix which isn't part of the issue
-				// tracking system and hence no task should be displayed.
 				return null;
 			}
 		}
 
-		private static string FullBranchNameToShortName(string fullBranchName)
+		private PlasticTask FetchTaskFromId(string taskId)
 		{
-			int index = fullBranchName.LastIndexOf("/", StringComparison.Ordinal);
-			if (index >= 0)
-				return fullBranchName.Substring(index + 1);
+			// This will also throw if the taskID is not convertible.
+			// E.g. 'main' doesn't work because 'm' is not part of the converter letters.
+			// But the test is still not enough to be 100% sure the web request will succeed.
+			int accountSeq = idConverter.SeqToInt(taskId);
 
-			return fullBranchName;
+			string query =
+				"{\"query\":{\"_root\":[{\"account\":" +
+				"[{\"cards({\\\"accountSeq\\\":" + accountSeq +
+				",\\\"visibility\\\":\\\"default\\\"})\":" +
+				"[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"accountSeq\"]}]}]}}";
+
+			dynamic data = service.PostQuery(query);
+
+			var idToEmail = PopulateEmailUserLookup();
+
+			// Return the first result, since the card collection should only contain a single one.
+			foreach (JProperty property in data.card)
+			{
+				return BuildTask(property, idToEmail);
+			}
+			return null;
 		}
 
 		public void MarkTaskAsOpen(string taskId, string assignee)
@@ -288,11 +283,6 @@
 			string browserURL =
 				"https://" + config.GetValue(ACCOUNT_NAME) + ".codecks.io/card/" + taskId;
 			System.Diagnostics.Process.Start(browserURL);
-		}
-
-		public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
-		{
-			// TODO: Implement UpdateLinkedTasksToChangeset.
 		}
 
 		public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
@@ -341,6 +331,11 @@
 			// The last idea appears difficult to implement. We would have to define
 			// what kind of merge means "feature done", since it could be a more
 			// involved merge-pipeline etc. Probably best to only support changeset mode.
+		}
+
+		public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
+		{
+			// TODO: Implement UpdateLinkedTasksToChangeset.
 		}
 	}
 }
