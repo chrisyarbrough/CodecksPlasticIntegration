@@ -10,7 +10,7 @@
 		{
 			Assert.AreEqual(number, new CardIDConverter().SeqToInt(seq));
 		}
-		
+
 		[TestCaseSource(nameof(testCases))]
 		public void IntToSeq_ValidNumber_ReturnsValidString(string seq, int number)
 		{
