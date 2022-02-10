@@ -5,6 +5,7 @@
 	using Newtonsoft.Json.Linq;
 	using System;
 	using System.Collections.Generic;
+	using System.Net;
 
 	/// <summary>
 	/// The main interface implementation for the issue tracker extension.
@@ -113,10 +114,36 @@
 		/// </summary>
 		public List<PlasticTask> GetPendingTasks()
 		{
+			// Exceptions thrown here will be displayed in the 'create branch'
+			// window in Plastic as helpful error messages.
+
 			const string subQuery =
 				"{\\\"visibility\\\":\\\"default\\\"}";
 
 			return FetchAndCacheCards(subQuery);
+		}
+
+		/// <summary>
+		/// Called when creating a new branch from a task.
+		/// Returns tasks filtered by the email of the assigned user.
+		/// </summary>
+		public List<PlasticTask> GetPendingTasks(string assigneeEmail)
+		{
+			string userId = service.FetchUserId(assigneeEmail);
+
+			string subQuery = "{\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
+			                  userId +
+			                  "\\\"]}],\\\"visibility\\\":\\\"default\\\"}";
+
+			return FetchAndCacheCards(subQuery);
+		}
+
+		private List<PlasticTask> FetchAndCacheCards(string cardSubQuery)
+		{
+			var lookup = PopulateEmailUserLookup();
+			IEnumerable<JProperty> cards = service.LoadCards(cardSubQuery);
+			PopulateCardGuidLookup(cards);
+			return BuildTasks(cards, lookup);
 		}
 
 		private Dictionary<string, string> PopulateEmailUserLookup()
@@ -137,32 +164,6 @@
 			}
 
 			return idToMail;
-		}
-
-		/// <summary>
-		/// Called when creating a new branch from a task.
-		/// Returns tasks filtered by the email of the assigned user.
-		/// </summary>
-		public List<PlasticTask> GetPendingTasks(string assigneeEmail)
-		{
-			if (!service.IsLoggedIn)
-				return new List<PlasticTask>();
-
-			string userId = service.FetchUserId(assigneeEmail);
-
-			string subQuery = "{\\\"$and\\\":[{\\\"assigneeId\\\":[\\\"" +
-			                  userId +
-			                  "\\\"]}],\\\"visibility\\\":\\\"default\\\"}";
-
-			return FetchAndCacheCards(subQuery);
-		}
-
-		private List<PlasticTask> FetchAndCacheCards(string cardSubQuery)
-		{
-			var lookup = PopulateEmailUserLookup();
-			IEnumerable<JProperty> cards = service.LoadCards(cardSubQuery);
-			PopulateCardGuidLookup(cards);
-			return BuildTasks(cards, lookup);
 		}
 
 		private void PopulateCardGuidLookup(IEnumerable<JProperty> cards)
@@ -226,6 +227,8 @@
 				}
 				catch (Exception)
 				{
+					// This exception would open an annoying error popup every time
+					// a user selects a branch.
 					return null;
 				}
 			}
@@ -303,19 +306,39 @@
 			if (taskIds.Count == 0)
 				return tasks;
 
-			// Expecting only a single card in the response,
-			// this would ideally directly index the first JProperty.
+			// TODO: Make this a TryParse-like method.
+			try
+			{
+				for (int i = 0; i < taskIds.Count; i++)
+				{
+					taskIds[i] = idConverter.SeqToInt(taskIds[i]).ToString();
+				}
+			}
+			catch (Exception)
+			{
+				// The provided task ID didn't event pass the conversion step,
+				// so don't even try to send it to the API.
+				return tasks;
+			}
 
 			string subQuery = "{\\\"accountSeq\\\":[" + string.Join(",", taskIds) + "]}";
 
 			var idToEmail = PopulateEmailUserLookup();
 
-			foreach (var card in service.LoadCards(subQuery))
+			try
 			{
-				tasks.Add(BuildTask(card, idToEmail));
+				foreach (var card in service.LoadCards(subQuery))
+				{
+					tasks.Add(BuildTask(card, idToEmail));
+				}
+				return tasks;
 			}
-
-			return tasks;
+			catch (WebException)
+			{
+				// The request failed, most likely because the provided issue ID
+				// does not match any card in Codecks.
+				return tasks;
+			}
 		}
 
 		/// <summary>

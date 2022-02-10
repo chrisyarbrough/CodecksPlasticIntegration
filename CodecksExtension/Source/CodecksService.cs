@@ -157,21 +157,17 @@ namespace Xarbrough.CodecksPlasticIntegration
 			stream.Write(bytes, 0, bytes.Length);
 		}
 
-		[System.Diagnostics.Conditional("DEBUG")]
 		private void ThrowIfNotLoggedIn()
 		{
-			if (!IsLoggedIn)
+			if (string.IsNullOrEmpty(token))
 			{
 				throw new InvalidOperationException(
-					"Requests can only be sent after successful login.");
+					"Issue tracker connection failed. User is not logged in.");
 			}
 		}
 
-		public bool IsLoggedIn => !string.IsNullOrEmpty(token);
-
 		public string LoadAccountID()
 		{
-			ThrowIfNotLoggedIn();
 			const string query = "{\"query\":{\"_root\":[{\"account\":[\"name\",\"id\"]}]}}";
 			dynamic result = PostQuery(query);
 			return result._root.account;
@@ -179,7 +175,6 @@ namespace Xarbrough.CodecksPlasticIntegration
 
 		public string FetchUserEmail(string userId)
 		{
-			ThrowIfNotLoggedIn();
 			string query =
 				"{\"query\":{\"user(" +
 				userId +
@@ -192,7 +187,6 @@ namespace Xarbrough.CodecksPlasticIntegration
 
 		public string FetchUserId(string email)
 		{
-			ThrowIfNotLoggedIn();
 			string getAllUsers =
 				"{\"query\":{\"account(" +
 				LoadAccountID() +
@@ -217,15 +211,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 				cardSubQuery +
 				")\":[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"accountSeq\"]}]}]}}";
 
-			dynamic result;
-			try
-			{
-				result = PostQuery(query);
-			}
-			catch (Exception)
-			{
-				yield break;
-			}
+			dynamic result = PostQuery(query);
 
 			// The Codecks API uses the singular name 'card', but this object is a collection.
 			foreach (var card in result.card)
