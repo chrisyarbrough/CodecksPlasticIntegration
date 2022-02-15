@@ -42,16 +42,41 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Source\Card.cs" />
     <Compile Include="Source\CardIDConverter.cs" />
     <Compile Include="Source\CodecksExtension.cs" />
     <Compile Include="Source\CodecksExtensionFactory.cs" />
     <Compile Include="Source\CodecksService.cs" />
+    <Compile Include="Source\Configuration\BoolConfigValue.cs" />
+    <Compile Include="Source\Configuration\ConfigValue.cs" />
+    <Compile Include="Source\Configuration\ConfigValues.cs" />
+    <Compile Include="Source\Configuration\StringConfigValue.cs" />
+    <Compile Include="Source\Credentials.cs" />
+    <Compile Include="Source\ExtensionErrorHandling.cs" />
     <Compile Include="Source\LoggedIssueTrackerExtension.cs" />
     <Compile Include="Source\LogStringExtensions.cs" />
     <Compile Include="Source\BranchName.cs" />
+    <Compile Include="Source\QueryProvider.cs" />
+    <Compile Include="Source\User.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\GetPendingCards.json" />
+    <EmbeddedResource Include="Queries\GetPendingCardsWithAssignee.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\GetUserEmail.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\GetAccountId.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\GetAllUsers.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Queries\GetCard.json" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

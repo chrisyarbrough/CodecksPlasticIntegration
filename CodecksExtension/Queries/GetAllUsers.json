@@ -1,0 +1,21 @@
+﻿{
+  "query": {
+	"account(<ACCOUNT>)": [
+	  {
+		"roles": [
+		  {
+			"user": [
+			  "id",
+			  "fullName",
+			  {
+				"primaryEmail": [
+				  "email"
+				]
+			  }
+			]
+		  }
+		]
+	  }
+	]
+  }
+}

@@ -1,0 +1,20 @@
+﻿{
+  "query": {
+	"_root": [
+	  {
+		"account": [
+		  {
+			"cards({\"accountSeq\":[<ACCOUNT_SEQ>]})": [
+			  "accountSeq",
+			  "title",
+			  "cardId",
+			  "content",
+			  "status",
+			  "assigneeId"
+			]
+		  }
+		]
+	  }
+	]
+  }
+}

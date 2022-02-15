@@ -1,198 +1,91 @@
 namespace Xarbrough.CodecksPlasticIntegration
 {
-	using log4net;
-	using Newtonsoft.Json;
 	using Newtonsoft.Json.Linq;
-	using System;
 	using System.Collections.Generic;
-	using System.IO;
+	using System.Linq;
 	using System.Net;
-	using System.Text;
-	using System.Text.RegularExpressions;
 
 	/// <summary>
 	/// Interfaces with the Codecks web API.
 	/// </summary>
 	public class CodecksService
 	{
-		private string token;
-		private string baseURL;
-		private string accountName;
+		private const string baseURL = "https://api.codecks.io/";
 
-		private static readonly ILog log = LogManager.GetLogger("CodecksService");
+		private readonly CodecksCredentials credentials;
+		private readonly WebClient webClient;
+		private readonly QueryProvider queryProvider = new QueryProvider();
 
-		/// <summary>
-		/// Before any other call to the API, an authorized user must log into the service.
-		/// </summary>
-		/// <param name="url">The codecks base urls. Most likely 'https://api.codecks.io/'.</param>
-		/// <param name="accountName">The organization to which the user belongs.</param>
-		public void Login(
-			string url,
-			string accountName,
-			string email,
-			string password)
+		public CodecksService(CodecksCredentials credentials)
 		{
-			url = SanitizeURL(url);
-
-			byte[] data = SerializeCredentials(email, password);
-			this.token = FetchRequestToken(url, accountName, data);
-			this.baseURL = url;
-			this.accountName = accountName;
-		}
-
-		private static string SanitizeURL(string url)
-		{
-			// The base URL must be in the exact format: 'https://api.codecks.io/'
-			// because we combine it with different endpoints later (e.g. 'update').
-			// To make it easier for users to input the url, be forgiving about
-			// missing or too many slashes at the end.
-			return url.TrimEnd('/') + "/";
-		}
-
-		private static byte[] SerializeCredentials(string email, string password)
-		{
-			string json = JsonConvert.SerializeObject(new
-			{
-				email,
-				password
-			});
-			return Encoding.UTF8.GetBytes(json);
+			this.credentials = credentials;
+			this.webClient = new WebClient();
 		}
 
 		/// <summary>
-		/// Codecks uses a simple cookie token for authentication.
+		/// Before any other call to the API,
+		/// an authorized user must log into the service.
 		/// </summary>
-		/// <exception cref="CookieException"></exception>
-		private static string FetchRequestToken(
-			string url, string accountName, byte[] credentialsData)
+		public void Login()
 		{
-			var request = (HttpWebRequest)WebRequest.Create(
-				url + "dispatch/users/login");
-
-			request.Headers["X-Account"] = accountName;
-			request.ContentType = "application/json";
-			request.Method = "POST";
-
-			var stream = request.GetRequestStream();
-			stream.Write(credentialsData, 0, credentialsData.Length);
-
-			using (var response = (HttpWebResponse)request.GetResponse())
-			{
-				if (TryParseToken(response, out string token))
-					return token;
-			}
-
-			// This point will most likely never be reached because the web request
-			// will throw an exception earlier if authentication fails.
-			throw new CookieException();
+			credentials.Login(webClient, baseURL);
 		}
 
-		private static bool TryParseToken(HttpWebResponse response, out string cookie)
+		public IEnumerable<Card> GetPendingCards()
 		{
-			string header = response.Headers["set-cookie"];
-
-			// To avoid bringing in more dependencies (e.g. System.Web.HttpCookie),
-			// use manual parsing instead.
-			Match match = Regex.Match(header, "at=(.*?);");
-
-			if (match.Success)
-			{
-				cookie = match.Groups[1].Value;
-				return true;
-			}
-			cookie = string.Empty;
-			return false;
+			string query = GetQueryFromFile("GetPendingCards.json");
+			return LoadCardObjects(query);
 		}
 
-		public dynamic PostQuery(string query)
+		public IEnumerable<Card> GetPendingCards(string assigneeId)
 		{
-			ThrowIfNotLoggedIn();
-
-			var request = (HttpWebRequest)WebRequest.Create(baseURL);
-			SetupValidRequest(request);
-			WriteBody(request, query);
-
-			using (var response = (HttpWebResponse)request.GetResponse())
-			using (var reader = new StreamReader(response.GetResponseStream()))
-			{
-				string json = reader.ReadToEnd();
-				return JObject.Parse(json);
-			}
+			string query = GetQueryFromFile("GetPendingCardsWithAssignee.json");
+			query = query.Replace("<ASSIGNEE>", assigneeId);
+			return LoadCardObjects(query);
 		}
 
-		public void PostCardUpdate(string body)
+		public Card GetCard(int accountSeq)
 		{
-			ThrowIfNotLoggedIn();
-
-			var request = (HttpWebRequest)WebRequest.Create(
-				baseURL + "dispatch/cards/update");
-
-			SetupValidRequest(request);
-			WriteBody(request, body);
-
-			using (var response = (HttpWebResponse)request.GetResponse())
-			using (var reader = new StreamReader(response.GetResponseStream()))
-			{
-				string json = reader.ReadToEnd();
-				if (json.Length == 0)
-					log.Error("Failed to update card status: " + response.StatusDescription);
-			}
+			string query = GetQueryFromFile("GetCard.json");
+			query = query.Replace("<ACCOUNT_SEQ>", accountSeq.ToString());
+			return LoadCardObjects(query).First();
 		}
 
-		private void SetupValidRequest(WebRequest request)
+		public IEnumerable<Card> GetCards(IEnumerable<string> accountSeqs)
 		{
-			request.Headers = new WebHeaderCollection
-			{
-				{ "X-Account", accountName },
-				{ "X-Auth-Token", token },
-			};
-			request.ContentType = "application/json";
-			request.Method = "POST";
+			string query = GetQueryFromFile("GetCard.json");
+			query = query.Replace("<ACCOUNT_SEQ>", string.Join(",", accountSeqs));
+			return LoadCardObjects(query);
 		}
 
-		private static void WriteBody(WebRequest request, string payload)
+		public string GetAccountId()
 		{
-			var stream = request.GetRequestStream();
-			byte[] bytes = Encoding.UTF8.GetBytes(payload);
-			stream.Write(bytes, 0, bytes.Length);
-		}
-
-		private void ThrowIfNotLoggedIn()
-		{
-			if (string.IsNullOrEmpty(token))
-			{
-				throw new InvalidOperationException(
-					"Issue tracker connection failed. User is not logged in.");
-			}
-		}
-
-		public string LoadAccountID()
-		{
-			const string query = "{\"query\":{\"_root\":[{\"account\":[\"name\",\"id\"]}]}}";
-			dynamic result = PostQuery(query);
+			string query = GetQueryFromFile("GetAccountId.json");
+			dynamic result = SendJsonRequest(query);
 			return result._root.account;
 		}
 
-		public string FetchUserEmail(string userId)
+		public IEnumerable<User> GetAllUsers(string accountId)
 		{
-			string query =
-				"{\"query\":{\"user(" +
-				userId +
-				")\":[\"fullName\",{\"primaryEmail\":[\"email\"]}]}}";
-
-			dynamic result = PostQuery(query);
-			string emailID = result.user[userId].primaryEmail;
-			return result.userEmail[emailID].email;
+			string query = GetQueryFromFile("GetAllUsers.json");
+			query = query.Replace("<ACCOUNT>", accountId);
+			dynamic result = SendAuthenticatedJsonRequest(query);
+			foreach (JProperty prop in result.userEmail)
+			{
+				yield return new User(
+					(string)prop.Value["userId"],
+					(string)prop.Value["email"]);
+			}
 		}
 
-		public string FetchUserId(string email)
+		public string FindUserIdByMail(string accountID, string email)
 		{
-			string getAllUsers =
-				"{\"query\":{\"account(" +
-				LoadAccountID() +
-				")\":[{\"roles\":[{\"user\":[\"id\",\"name\",\"fullName\",{\"primaryEmail\":[\"email\"]}]}]}]}}";
+			// This could be improved by using a more powerful query
+			// which directly finds the user by email on the server.
+			string query = GetQueryFromFile("GetAllUsers.json");
+			query = query.Replace("<ACCOUNT>", accountID);
 
-			dynamic data = PostQuery(getAllUsers);
+			dynamic data = SendAuthenticatedJsonRequest(query);
 			foreach (JProperty property in data.userEmail)
 			{
 				string mail = (string)property.Value["email"];
@@ -201,21 +94,92 @@ namespace Xarbrough.CodecksPlasticIntegration
 					return (string)property.Value["userId"];
 				}
 			}
-			throw new ArgumentException(nameof(email));
+			throw new WebException($"Failed to find user by mail: {email}");
 		}
 
-		public IEnumerable<JProperty> LoadCards(string cardSubQuery)
+		public string GetUserEmail(string userId)
 		{
-			string query =
-				"{\"query\":{\"_root\":[{\"account\":[{\"cards(" +
-				cardSubQuery +
-				")\":[\"title\",\"cardId\",\"content\",\"status\",\"assigneeId\",\"accountSeq\"]}]}]}}";
+			if (string.IsNullOrEmpty(userId))
+				return string.Empty;
 
-			dynamic result = PostQuery(query);
+			string query = GetQueryFromFile("GetUserEmail.json");
+			query = query.Replace("<USER>", userId);
+			dynamic result = SendJsonRequest(query);
+			string emailID = result.user[userId].primaryEmail;
+			return result.userEmail[emailID].email;
+		}
 
-			// The Codecks API uses the singular name 'card', but this object is a collection.
-			foreach (var card in result.card)
-				yield return card;
+		public void SetCardStatusToStarted(string cardGuid)
+		{
+			// The card id is the full-length guid, not to confuse with the accountSeq.
+			UploadString(
+				baseURL + "dispatch/cards/update",
+				"{\"id\":\"" + cardGuid + "\",\"status\":\"started\"}");
+		}
+
+		public string GetCardBrowserURL(string account, string idLabel)
+		{
+			// There are several ways to display a card in the web app:
+			// Within the deck:
+			// https://mysubdomain.codecks.io/decks/105-preproduction/card/1w4-start-documentation
+
+			// Or as a single card on the hand:
+			// https://mysubdomain.codecks.io/card/1w4-start-documentation
+
+			// Conveniently, a short URL is also supported:
+			// https://mysubdomain.codecks.io/card/1w4
+
+			return "https://" + account + ".codecks.io/card/" + idLabel;
+		}
+
+		private IEnumerable<Card> LoadCardObjects(string query)
+		{
+			dynamic result = SendAuthenticatedJsonRequest(query);
+			foreach (JProperty card in result.card)
+				yield return card.Value.ToObject<Card>();
+		}
+
+		private string UploadString(string url, string payload)
+		{
+			webClient.Headers["Content-Type"] = "application/json";
+			return webClient.UploadString(url, payload);
+		}
+
+		private dynamic SendAuthenticatedJsonRequest(string jsonPayload)
+		{
+			// There seem to be special cases in which 'Connect' is not
+			// called for the extension (e.g. when switching between task-on-branch
+			// and task-on-changeset mode). In these cases, the user might
+			// not be logged in, but service calls are being issues.
+			if (TryAuthenticate() == false)
+				Login();
+
+			credentials.Authenticate(webClient);
+			return SendJsonRequest(jsonPayload);
+		}
+
+		private bool TryAuthenticate()
+		{
+			try
+			{
+				credentials.Authenticate(webClient);
+				return true;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		private dynamic SendJsonRequest(string jsonPayload)
+		{
+			string response = UploadString(baseURL, jsonPayload);
+			return JObject.Parse(response);
+		}
+
+		private string GetQueryFromFile(string fileName)
+		{
+			return queryProvider.GetQuery(fileName);
 		}
 	}
 }

@@ -1,0 +1,12 @@
+﻿{
+  "query": {
+	"user(<USER>)": [
+	  "fullName",
+	  {
+		"primaryEmail": [
+		  "email"
+		]
+	  }
+	]
+  }
+}

@@ -2,7 +2,7 @@
 {
 	using System;
 
-	public static class BranchName
+	internal static class BranchName
 	{
 		/// <summary>
 		/// Given a branch name that includes nested branches, e.g. "/main/nem-123",
