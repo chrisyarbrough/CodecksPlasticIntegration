@@ -5,7 +5,7 @@
 Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [PlasticSCM](https://www.plasticscm.com/).
 
 # Getting Started #
-1) [Download](https://github.com/chrisyarbrough/CodecksPlasticIntegration/releases/latest/download/codecks.zip) or build the CodecksExtension library.
+1) [Download](https://github.com/chrisyarbrough/CodecksPlasticIntegration/releases) or build the CodecksExtension library.
 
 2) Place the codecks folder (containing the plugin and its dependencies) in the extensions directory of the PlasticSCM installation.
    With the default installation on Windows, the path should look like this:
