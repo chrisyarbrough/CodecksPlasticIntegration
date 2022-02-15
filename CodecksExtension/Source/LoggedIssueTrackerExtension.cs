@@ -8,7 +8,7 @@
 	/// A decorator that adds informational logging to the interface methods
 	/// of a <see cref="IPlasticIssueTrackerExtension"/> instance.
 	/// </summary>
-	public class LoggedIssueTrackerExtension : IPlasticIssueTrackerExtension
+	internal class LoggedIssueTrackerExtension : IPlasticIssueTrackerExtension
 	{
 		private readonly IPlasticIssueTrackerExtension extension;
 		private readonly ILog log;

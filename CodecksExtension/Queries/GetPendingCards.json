@@ -1,0 +1,20 @@
+﻿{
+  "query": {
+	"_root": [
+	  {
+		"account": [
+		  {
+			"cards({\"visibility\":\"default\"})": [
+			  "accountSeq",
+			  "title",
+			  "cardId",
+			  "content",
+			  "status",
+			  "assigneeId"
+			]
+		  }
+		]
+	  }
+	]
+  }
+}

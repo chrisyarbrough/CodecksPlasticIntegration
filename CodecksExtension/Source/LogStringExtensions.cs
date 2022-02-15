@@ -7,7 +7,7 @@ namespace Xarbrough.CodecksPlasticIntegration
 	/// <summary>
 	/// Adds string formatting to Plastic data types to facilitate logging.
 	/// </summary>
-	public static class LogStringExtensions
+	internal static class LogStringExtensions
 	{
 		public static string ToLogString(this IssueTrackerConfiguration configuration)
 		{
