@@ -140,8 +140,8 @@
 		{
 			string owner = string.Empty;
 
-			if (!string.IsNullOrEmpty(card.assigneeId))
-				owner = userIdToEmailConverter.Invoke(card.assigneeId);
+			if (!string.IsNullOrEmpty(card.assignee))
+				owner = userIdToEmailConverter.Invoke(card.assignee);
 
 			return new PlasticTask
 			{
@@ -204,7 +204,7 @@
 		{
 			int accountSeq = idConverter.SeqToInt(taskId);
 			Card card = service.GetCard(accountSeq);
-			string email = service.GetUserEmail(card.assigneeId);
+			string email = service.GetUserEmail(card.assignee);
 			return Convert(card, s => email);
 		}
 

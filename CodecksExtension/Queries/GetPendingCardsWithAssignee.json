@@ -10,7 +10,7 @@
 			  "cardId",
 			  "content",
 			  "status",
-			  "assigneeId"
+			  "assignee"
 			]
 		  }
 		]

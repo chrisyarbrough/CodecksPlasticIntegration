@@ -38,6 +38,6 @@
 		/// <summary>
 		/// The user guid assigned to this card.
 		/// </summary>
-		public string assigneeId;
+		public string assignee;
 	}
 }
