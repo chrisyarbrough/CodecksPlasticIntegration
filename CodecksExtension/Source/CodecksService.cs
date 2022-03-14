@@ -37,10 +37,10 @@ namespace Xarbrough.CodecksPlasticIntegration
 			return LoadCardObjects(query);
 		}
 
-		public IEnumerable<Card> GetPendingCards(string assigneeId)
+		public IEnumerable<Card> GetPendingCards(string assignee)
 		{
 			string query = GetQueryFromFile("GetPendingCardsWithAssignee.json");
-			query = query.Replace("<ASSIGNEE>", assigneeId);
+			query = query.Replace("<ASSIGNEE>", assignee);
 			return LoadCardObjects(query);
 		}
 
