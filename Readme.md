@@ -76,5 +76,5 @@ If specific types fail to load, Plastic may have changed their .NET target frame
 
 # Contributing
 
-If you'd like to contribute or have any trouble using the extension, open a new issue to discuss it or message me on Discord: 
-Chris Yarbrough#8887
+If you'd like to contribute or have any trouble using the extension, open a new issue to discuss it.
+If you already have a working fix in place, please open a Pull Request, thank you!
