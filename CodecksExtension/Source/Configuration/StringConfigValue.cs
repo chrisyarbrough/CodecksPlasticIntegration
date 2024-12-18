@@ -1,15 +1,14 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration.Configuration
+﻿namespace Xarbrough.CodecksPlasticIntegration.Configuration;
+
+using Codice.Client.IssueTracker;
+
+class StringConfigValue : ConfigValue<string>
 {
-	using Codice.Client.IssueTracker;
+	public StringConfigValue(string key, IssueTrackerConfiguration configuration) 
+		: base(key, configuration) { }
 
-	internal class StringConfigValue : ConfigValue<string>
+	public override string GetValue()
 	{
-		public StringConfigValue(string key, IssueTrackerConfiguration configuration) 
-			: base(key, configuration) { }
-
-		public override string GetValue()
-		{
-			return configuration.GetValue(Key);
-		}
+		return configuration.GetValue(Key);
 	}
 }
