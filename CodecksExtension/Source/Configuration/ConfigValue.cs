@@ -1,19 +1,18 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration.Configuration
+﻿namespace Xarbrough.CodecksPlasticIntegration.Configuration;
+
+using Codice.Client.IssueTracker;
+
+abstract class ConfigValue<T>
 {
-	using Codice.Client.IssueTracker;
+	public readonly string Key;
 
-	internal abstract class ConfigValue<T>
+	protected readonly IssueTrackerConfiguration configuration;
+
+	protected ConfigValue(string key, IssueTrackerConfiguration configuration)
 	{
-		public readonly string Key;
-
-		protected readonly IssueTrackerConfiguration configuration;
-
-		protected ConfigValue(string key, IssueTrackerConfiguration configuration)
-		{
-			this.Key = key;
-			this.configuration = configuration;
-		}
-
-		public abstract T GetValue();
+		this.Key = key;
+		this.configuration = configuration;
 	}
+
+	public abstract T GetValue();
 }
