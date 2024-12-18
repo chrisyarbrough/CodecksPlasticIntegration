@@ -1,21 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net7.0</TargetFramework>
-		<Deterministic>true</Deterministic>
+		<Description>Adds support for the Codecks issue tracker to PlasticSCM.</Description>
 		<AssemblyVersion>1.5</AssemblyVersion>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<OutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks</OutputPath>
-		<Optimize>true</Optimize>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<OutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks</OutputPath>
-		<DebugSymbols>true</DebugSymbols>
-		<DebugType>full</DebugType>
-		<DefineConstants>DEBUG</DefineConstants>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -30,10 +17,6 @@
 		<Reference Include="utils">
 			<HintPath>..\Libraries\utils.dll</HintPath>
 		</Reference>
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>
