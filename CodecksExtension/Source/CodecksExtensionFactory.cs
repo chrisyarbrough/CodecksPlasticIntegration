@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 using Configuration;
 using Codice.Client.IssueTracker;
@@ -33,7 +33,8 @@ public class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 			new ExtensionErrorHandling(
 				new CodecksExtension(extensionName, configValues));
 
-		if (configValues.LogEnabled.GetValue())
+		// TODO: Not sure what's going on, but sometimes this seems to return false, although it should be true.
+		// if (configValues.LogEnabled.GetValue())
 			extension = new LoggedIssueTrackerExtension(extension);
 
 		return extension;

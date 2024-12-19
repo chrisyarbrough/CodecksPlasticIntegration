@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 using Newtonsoft.Json;
 using System.Net;

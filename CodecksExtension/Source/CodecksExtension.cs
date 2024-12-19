@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 using Configuration;
 using Codice.Client.IssueTracker;
@@ -28,7 +28,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	/// <summary>
 	/// Converts the card 'accountSeq' value to a three-letter
-	/// display label and vice-versa.
+	/// display label and vice versa.
 	/// </summary>
 	private readonly CardIDConverter idConverter = new CardIDConverter();
 
@@ -71,8 +71,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public bool TestConnection(IssueTrackerConfiguration configuration)
 	{
-		var configValues = new ConfigValues(configuration);
-		this.service = BuildService(configValues);
+		this.service = BuildService(new ConfigValues(configuration));
 
 		service.Login();
 
@@ -93,7 +92,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	public void Disconnect()
 	{
-		// Nothing to cleanup, but the interface defines this method.
+		// Nothing to clean up, but the interface defines this method.
 	}
 
 	/// <summary>

@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration.Configuration;
+namespace Xarbrough.CodecksPlasticIntegration.Configuration;
 
 using Codice.Client.IssueTracker;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ sealed class ConfigValues
 	/// </summary>
 	/// <remarks>
 	/// It is impossible to tell if the provided configuration contains
-	/// values set by the user. The only thing known is, whether
+	/// values set by the user. The only thing known is whether
 	/// the loaded values are defaults or something else.
 	/// </remarks>
 	public IssueTrackerConfiguration BuildPlasticConfiguration()
