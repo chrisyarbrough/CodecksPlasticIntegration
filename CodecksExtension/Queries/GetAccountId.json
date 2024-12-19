@@ -1,12 +1,12 @@
 {
   "query": {
-	"_root": [
-	  {
-		"account": [
-		  "name",
-		  "id"
-		]
-	  }
-	]
+    "_root": [
+      {
+        "account": [
+          "name",
+          "id"
+        ]
+      }
+    ]
   }
 }

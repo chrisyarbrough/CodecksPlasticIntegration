@@ -3,8 +3,9 @@
 root = true
 
 [*]
-end_of_line = crlf
-insert_final_newline = true
+end_of_line = lf
 indent_style = tab
-guidelines = 80
-guidelines_style = 1px dotted green
+
+[*.json]
+indent_style = space
+indent_size = 2
