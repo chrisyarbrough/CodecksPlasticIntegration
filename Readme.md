@@ -67,8 +67,21 @@ simply copy-paste the libraries during development and deploy them right next to
 See the 'Libraries' folder in the repository.
 
 The project solution includes a "Start Host" configuration which builds the extension and copies it directly to
-the default PlasticSCM installation path and also launch the GUI client for interactive testing and debugging.
-Most likely, your IDE will need to be started with admin permissions for this to work.
+the default PlasticSCM installation path and also launches the GUI client for interactive testing and debugging.
+
+To allow this on your machine, either set the permissions of the
+PlasticSCM/extensions/codecks directory to allow writing.
+Or start your IDE with elevated privileges.
+(at your own risk)
+
+For example on macOS:
+```zsh
+EXT_DIR=/Applications/PlasticSCM.app/Contents/extensions/codecks/
+sudo mkdir -p $EXT_DIR
+sudo chown -R username $EXT_DIR
+```
+
+On Windows, right-click the folder, select properties and allow write for your user.
 
 ## Logging
 
