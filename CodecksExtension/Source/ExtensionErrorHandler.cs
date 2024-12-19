@@ -66,7 +66,7 @@ class ExtensionErrorHandler : IPlasticIssueTrackerExtension
 
 	public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)
 	{
-		log.Info("Log checkin result for changeset:\n" + changeset.ToLogString());
+		log.Info("Log 'Check in' result for changeset:\n" + changeset.ToLogString());
 		extension.LogCheckinResult(changeset, tasks);
 	}
 

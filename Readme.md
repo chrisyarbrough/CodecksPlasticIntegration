@@ -9,8 +9,11 @@ Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [Plasti
 - Branch prefix is configurable in the extension settings
 - Open task externally (on Codecks website)
 
-> PlasticSCM was acquired by Unity in 2020 and is now part of Unity DevOps.
-> The underlying API (and this extension) should still work the same though.
+> _PlasticSCM_ was acquired by Unity in 2020 and is now called _Unity DevOps Version Control_.
+> The features, including this extension, work mostly the same though.
+
+For details about what a task and issue tracking extension can do, see
+this [guide](https://docs.plasticscm.com/extensions/plastic-scm-version-control-task-and-issue-tracking-guide).
 
 # Getting Started - User Setup
 
@@ -75,6 +78,7 @@ Or start your IDE with elevated privileges.
 (at your own risk)
 
 For example on macOS:
+
 ```zsh
 EXT_DIR=/Applications/PlasticSCM.app/Contents/extensions/codecks/
 sudo mkdir -p $EXT_DIR
