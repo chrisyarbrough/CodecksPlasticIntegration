@@ -32,9 +32,12 @@ class QueryProvider
 	{
 		// Query files must be marked as "embedded resource" during the build.
 
-		const string namespacePath = "CodecksExtension.Queries.";
+		fileName = "CodecksExtension.Queries." + fileName;
 		Stream stream = Assembly.GetExecutingAssembly()
-			.GetManifestResourceStream(namespacePath + fileName);
+			.GetManifestResourceStream(fileName);
+
+		if (stream == null)
+			throw new Exception("Query file not found: " + fileName);
 
 		using var reader = new StreamReader(stream);
 		string content = reader.ReadToEnd();

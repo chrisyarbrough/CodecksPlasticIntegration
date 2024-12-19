@@ -37,7 +37,7 @@ class CardIDConverter
 		this.letters = letters;
 		this.startVal = startVal;
 		this.implicitZero = implicitZero;
-		this.length = letters.Length;
+		length = letters.Length;
 
 		letterToIndex = new Dictionary<char, int>();
 		for (int i = 0; i < letters.Length; i++)
@@ -48,8 +48,7 @@ class CardIDConverter
 
 	public int SeqToInt(string seq)
 	{
-		if (letterToIndex.TryGetValue(seq[0], out int intVal) == false)
-			intVal = 0;
+		int intVal = letterToIndex.GetValueOrDefault(seq[0], 0);
 
 		for (int i = 1; i < seq.Length; i += 1)
 		{

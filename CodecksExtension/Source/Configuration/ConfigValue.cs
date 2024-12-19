@@ -10,7 +10,7 @@ abstract class ConfigValue<T>
 
 	protected ConfigValue(string key, IssueTrackerConfiguration configuration)
 	{
-		this.Key = key;
+		Key = key;
 		this.configuration = configuration;
 	}
 

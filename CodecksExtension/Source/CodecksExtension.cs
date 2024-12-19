@@ -71,7 +71,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public bool TestConnection(IssueTrackerConfiguration configuration)
 	{
-		this.service = BuildService(new ConfigValues(configuration));
+		service = BuildService(new ConfigValues(configuration));
 
 		service.Login();
 
@@ -86,7 +86,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	public void Connect()
 	{
-		this.service = BuildService(this.configValues);
+		service = BuildService(configValues);
 		service.Login();
 	}
 
@@ -140,15 +140,15 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	{
 		string owner = string.Empty;
 
-		if (!string.IsNullOrEmpty(card.assignee))
-			owner = userIdToEmailConverter.Invoke(card.assignee);
+		if (!string.IsNullOrEmpty(card.Assignee))
+			owner = userIdToEmailConverter.Invoke(card.Assignee);
 
 		return new PlasticTask
 		{
-			Title = card.title,
-			Description = card.content,
-			Id = idConverter.IntToSeq(card.accountSeq),
-			Status = card.status,
+			Title = card.Title,
+			Description = card.Content,
+			Id = idConverter.IntToSeq(card.AccountSeq),
+			Status = card.Status,
 			Owner = owner
 		};
 	}
@@ -204,7 +204,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	{
 		int accountSeq = idConverter.SeqToInt(taskId);
 		Card card = service.GetCard(accountSeq);
-		string email = service.GetUserEmail(card.assignee);
+		string email = service.GetUserEmail(card.Assignee);
 		return Convert(card, _ => email);
 	}
 
@@ -213,7 +213,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// Task id example: 1w5 (display label on the Codecks card).
 		int accountSeq = idConverter.SeqToInt(taskId);
 		Card card = service.GetCard(accountSeq);
-		service.SetCardStatusToStarted(card.cardId);
+		service.SetCardStatusToStarted(card.CardId);
 	}
 
 	/// <summary>
