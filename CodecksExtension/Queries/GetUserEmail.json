@@ -1,12 +1,12 @@
 {
   "query": {
-	"user(<USER>)": [
-	  "fullName",
-	  {
-		"primaryEmail": [
-		  "email"
-		]
-	  }
-	]
+    "user(<USER>)": [
+      "fullName",
+      {
+        "primaryEmail": [
+          "email"
+        ]
+      }
+    ]
   }
 }

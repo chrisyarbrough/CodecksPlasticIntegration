@@ -38,8 +38,8 @@ public class CodecksServiceTests
 	public void GetPendingCards()
 	{
 		service.Login();
-		var result = service.GetPendingCards();
-		Assert.Greater(result.Count(), 0);
+		var result = service.GetPendingCards().ToArray();
+		Assert.Greater(result.Length, 0);
 	}
 
 	[Test]

@@ -31,7 +31,10 @@ public struct Card
 	public string content;
 
 	/// <summary>
-	/// Examples: 'started', 'not_started'.
+	/// Examples:
+	/// not_started (could be open, but also reviewed or blocked)
+	/// done
+	/// started
 	/// </summary>
 	public string status;
 
