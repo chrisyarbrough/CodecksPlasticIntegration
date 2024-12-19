@@ -14,7 +14,7 @@ static class LogStringExtensions
 		var sb = new StringBuilder();
 		sb.Append("Working Mode: ").Append(configuration.WorkingMode).AppendLine();
 		sb.Append("Parameters:\n");
-		foreach (var parameter in configuration.GetAllParameters())
+		foreach (IssueTrackerConfigurationParameter parameter in configuration.GetAllParameters())
 		{
 			// Plastic stores encrypted passwords, but nevertheless, we don't want
 			// to accidentally log anything that could help compromise it.
@@ -31,7 +31,7 @@ static class LogStringExtensions
 	{
 		var sb = new StringBuilder();
 
-		// It's ok to only return the most import simple fields.
+		// It's ok to only return the most important simple fields.
 		// The 'Items' or 'Children' members won't likely add any useful information.
 		AppendPublicFields(sb, changeset);
 
