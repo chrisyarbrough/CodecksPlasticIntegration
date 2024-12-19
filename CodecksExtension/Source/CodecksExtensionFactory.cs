@@ -30,12 +30,9 @@ public class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 		var configValues = new ConfigValues(configuration);
 
 		IPlasticIssueTrackerExtension extension =
-			new ExtensionErrorHandling(
-				new CodecksExtension(extensionName, configValues));
-
-		// TODO: Not sure what's going on, but sometimes this seems to return false, although it should be true.
-		// if (configValues.LogEnabled.GetValue())
-			extension = new LoggedIssueTrackerExtension(extension);
+			new LoggedIssueTrackerExtension(
+				new ExtensionErrorHandling(
+					new CodecksExtension(extensionName, configValues)));
 
 		return extension;
 	}

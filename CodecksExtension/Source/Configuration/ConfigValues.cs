@@ -8,7 +8,7 @@ using System.Collections.Generic;
 /// </summary>
 /// <remarks>
 /// This class is a facade for the <see cref="IssueTrackerConfiguration"/>
-/// provided by Plastic. For one part, it simple initializes the config
+/// provided by Plastic. For one part, it initializes the config
 /// parameters that are presented to the user, but as a second benefit,
 /// it also wraps some functionality and makes it easier to use for the
 /// main extension class than using the IssueTrackerConfiguration directly.
@@ -19,7 +19,6 @@ sealed class ConfigValues
 	public readonly ConfigValue<string> Email;
 	public readonly ConfigValue<string> Password;
 	public readonly ConfigValue<string> AccountName;
-	public readonly ConfigValue<bool> LogEnabled;
 
 	private readonly IssueTrackerConfiguration configuration;
 
@@ -31,7 +30,6 @@ sealed class ConfigValues
 		Email = new StringConfigValue("E-Mail", configuration);
 		Password = new StringConfigValue("Password", configuration);
 		AccountName = new StringConfigValue("Account Name", configuration);
-		LogEnabled = new BoolConfigValue("Log Enabled", configuration);
 	}
 
 	/// <summary>
@@ -95,7 +93,7 @@ sealed class ConfigValues
 	private IEnumerable<IssueTrackerConfigurationParameter> CreateDefaultParameters()
 	{
 		// Allow users to not use any branch prefix by not supplying a default value.
-		// If the extension would define one here, it would be impossible to detect
+		// If the extension defines one here, it would be impossible to detect
 		// whether the user wanted to set it to an empty string or
 		// if this is the first time the config is loaded.
 		yield return new IssueTrackerConfigurationParameter
@@ -127,14 +125,6 @@ sealed class ConfigValues
 			Name = Password.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.Password,
-			IsGlobal = false
-		};
-
-		yield return new IssueTrackerConfigurationParameter
-		{
-			Name = LogEnabled.Key,
-			Value = "false",
-			Type = IssueTrackerConfigurationParameterType.Boolean,
 			IsGlobal = false
 		};
 	}
