@@ -10,7 +10,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-		<OutputPath>C:\Program Files\PlasticSCM5\client\</OutputPath>
+		<OutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
