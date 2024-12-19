@@ -7,7 +7,7 @@ Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [Plasti
 > PlasticSCM was acquired by Unity in 2020 and is now part of Unity DevOps.
 > The underlying API (and this extension) should still work the same though.
 
-# Getting Started
+# Getting Started - User Setup
 
 1) Assuming you already use PlasticSCM or Unity DevOps.
    The client can be downloaded [here](https://www.plasticscm.com/download).
@@ -38,16 +38,11 @@ Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [Plasti
 
    Note that 'Account Name' is the subdomain of your organization used for the Codecks web frontend.
 
-# Additional Resources
+---
 
-The process for developing and configuring PlasticSCM extensions is documented
-[here](https://www.plasticscm.com/documentation/extensions/plastic-scm-version-control-task-and-issue-tracking-guide#WritingPlasticSCMcustomextensions).
+# Developer Setup
 
-Codecks provides the [web API](https://manual.codecks.io/api/)
-which is used by the extension to fetch task information and post status updates.
-As of August 2023, the API is still in beta, but it has been very stable since 2022.
-
-# Developing and Building from Source
+## Building from Source
 
 **Prerequisites**
 
@@ -70,7 +65,7 @@ The project solution includes a "Start Host" configuration which builds the exte
 the default PlasticSCM installation path and also launch the GUI client for interactive testing and debugging.
 Most likely, your IDE will need to be started with admin permissions for this to work.
 
-# Logging
+## Logging
 
 In the `~/.plastic4/plasticx.log.conf` add:
 
@@ -83,27 +78,38 @@ In the `~/.plastic4/plasticx.log.conf` add:
 
 On windows, the file is likely in the installation directory.
 
-# Troubleshooting
+## Testing
 
-> Unable to copy file x to y. Access to the path y is denied.
+For the regular tests:
 
-Try to start your IDE with admin permissions.
+```bash
+dotnet test
+```
 
-> My PlasticSCM installation path is different.
+To run the _CodecksServiceTest_ configure your dotnet user secrets like so:
 
-Change the output path in the project configuration, or,
-add a CodecksExtension.csproj.user file and overwrite the outputPath property locally.
+```bash
+dotnet user-secrets set key value
+```
 
-> Runtime errors when loading the extension.
+with the following info:
 
-Unless the issue is caused by a specific programming error or incompatible API changes,
-it's likely that certain dependencies haven't been loaded correctly.
-Ensure that all required libraries are copied next to the extension DLL.
-Maybe the version of one of the development libraries no longer matches PlasticSCM after an update.
-Try to upgrade the dev lib with a newer version.
-If specific types fail to load, Plastic may have changed their .NET target framework version.
+| Key              | Description                                                         |
+|------------------|---------------------------------------------------------------------|
+| Codecks:Email    | Email address of your Codecks account.                              |
+| Codecks:Password | Password associated with the Codecks email.                         |
+| Codecks:Account  | Account name of your Codecks organization (not your personal name). |
 
-# Contributing
+## Additional Resources
+
+The process for developing and configuring PlasticSCM extensions is documented
+[here](https://www.plasticscm.com/documentation/extensions/plastic-scm-version-control-task-and-issue-tracking-guide#WritingPlasticSCMcustomextensions).
+
+Codecks provides the [web API](https://manual.codecks.io/api/)
+which is used by the extension to fetch task information and post status updates.
+As of August 2023, the API is still in beta, but it has been very stable since 2022.
+
+## Contributing
 
 If you'd like to contribute or have any trouble using the extension, open a new issue to discuss it.
 If you already have a working fix in place, please open a Pull Request, thank you!
