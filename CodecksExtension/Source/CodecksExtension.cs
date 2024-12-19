@@ -12,7 +12,7 @@ using System.Diagnostics;
 ///	This is the core extension class dealing with the logic how
 /// to convert certain user interactions into Plastic tasks.
 /// To make the implementation simple, exceptions are thrown liberally.
-/// A separate class <seealso cref="ExtensionErrorHandling"/> deals
+/// A separate class <seealso cref="ExtensionErrorHandler"/> deals
 /// with decisions about how and if errors should be reported to the user.
 /// </remarks>
 class CodecksExtension : IPlasticIssueTrackerExtension
@@ -42,8 +42,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		if (string.IsNullOrEmpty(name))
 			throw new ArgumentException(name);
 
-		if (configValues == null)
-			throw new ArgumentNullException(nameof(configValues));
+		ArgumentNullException.ThrowIfNull(configValues);
 
 		this.name = name;
 		this.configValues = configValues;
@@ -72,7 +71,6 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	public bool TestConnection(IssueTrackerConfiguration configuration)
 	{
 		service = BuildService(new ConfigValues(configuration));
-
 		service.Login();
 
 		// To make sure the connection actually works,
@@ -259,7 +257,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// It is possible to implement different scenarios here, each of which
 		// would require some additional user settings:
 		// - Add a comment to the card simply stating that a checkin was performed.
-		// - Include meta info (changeset comment, time, etc).
+		// - Include meta info (changeset comment, time, etc.).
 		// - Task on changeset mode: Set the card status to e.g. review or done.
 		// - Task on branch mode: Add status comments or detect merge to main.
 		// The last idea appears difficult to implement. We would have to define
