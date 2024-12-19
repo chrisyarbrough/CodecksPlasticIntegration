@@ -28,7 +28,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<EmbeddedResource Include="Queries\**\*.json" />
+	  <None Update="Queries\*.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>
