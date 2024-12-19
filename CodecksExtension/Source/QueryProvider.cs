@@ -1,7 +1,6 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
 using System.IO;
-using System.Reflection;
 using System.Text;
 
 /// <summary>
@@ -30,17 +29,8 @@ class QueryProvider
 
 	private string LoadQuery(string fileName)
 	{
-		// Query files must be marked as "embedded resource" during the build.
-
-		fileName = "CodecksExtension.Queries." + fileName;
-		Stream stream = Assembly.GetExecutingAssembly()
-			.GetManifestResourceStream(fileName);
-
-		if (stream == null)
-			throw new Exception("Query file not found: " + fileName);
-
-		using var reader = new StreamReader(stream);
-		string content = reader.ReadToEnd();
+		string directory = Path.GetDirectoryName(typeof(QueryProvider).Assembly.Location);
+		string content = File.ReadAllText(directory + "/Queries/" + fileName);
 		return MinimizeJson(content);
 	}
 
