@@ -30,9 +30,8 @@ public class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 		var configValues = new ConfigValues(configuration);
 
 		IPlasticIssueTrackerExtension extension =
-			new LoggedIssueTrackerExtension(
-				new ExtensionErrorHandling(
-					new CodecksExtension(extensionName, configValues)));
+			new ExtensionErrorHandler(
+					new CodecksExtension(extensionName, configValues));
 
 		return extension;
 	}
