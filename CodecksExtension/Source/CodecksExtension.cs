@@ -116,8 +116,11 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	public List<PlasticTask> GetPendingTasks(string assigneeEmail)
 	{
+		// The passed assigneeEmail here is the one used to sign in to Unity/PlasticSCM.
+		// If the mail used in Codecks is different, the lookup/filtering fails.
+		// Therefore, we use the email from the configuration instead.
 		string accountId = service.GetAccountId();
-		string userId = service.FindUserIdByMail(accountId, assigneeEmail);
+		string userId = service.FindUserIdByMail(accountId, configValues.Email.GetValue());
 		IEnumerable<Card> cards = service.GetPendingCards(userId);
 		return Convert(cards);
 	}
