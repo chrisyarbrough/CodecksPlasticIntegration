@@ -4,6 +4,11 @@
 
 Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [PlasticSCM](https://www.plasticscm.com/).
 
+- Create new branch from task (Codecks card)
+- Mark card as started when branch is created
+- Branch prefix is configurable in the extension settings
+- Open task externally (on Codecks website)
+
 > PlasticSCM was acquired by Unity in 2020 and is now part of Unity DevOps.
 > The underlying API (and this extension) should still work the same though.
 
