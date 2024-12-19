@@ -1,5 +1,9 @@
 .idea/
 .vs/
-*.user
+.vscode/
+
 obj/
 bin/
+
+*.DS_Store
+*.user
