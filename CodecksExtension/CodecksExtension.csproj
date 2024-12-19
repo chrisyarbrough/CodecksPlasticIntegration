@@ -3,7 +3,14 @@
 	<PropertyGroup>
 		<Description>Adds support for the Codecks issue tracker to PlasticSCM.</Description>
 		<AssemblyVersion>1.5</AssemblyVersion>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(OS)' == 'Unix'">
 		<OutputPath>/Applications/PlasticSCM.app/Contents/extensions/codecks/</OutputPath>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
+		<OutputPath>C:\Program Files\PlasticSCM5\client\</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
