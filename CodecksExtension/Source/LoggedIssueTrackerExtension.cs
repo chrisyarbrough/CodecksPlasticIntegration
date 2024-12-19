@@ -36,7 +36,15 @@ class LoggedIssueTrackerExtension : IPlasticIssueTrackerExtension
 	public bool TestConnection(IssueTrackerConfiguration configuration)
 	{
 		log.Info("Test connection:\n" + configuration.ToLogString());
-		return extension.TestConnection(configuration);
+		try
+		{
+			return extension.TestConnection(configuration);
+		}
+		catch (Exception e)
+		{
+			log.Error(e);
+			throw;
+		}
 	}
 
 	public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)

@@ -50,18 +50,9 @@ class ExtensionErrorHandling : IPlasticIssueTrackerExtension
 
 	public bool TestConnection(IssueTrackerConfiguration configuration)
 	{
-		try
-		{
-			// This may throw because of invalid credentials.
-			return extension.TestConnection(configuration);
-		}
-		catch (Exception)
-		{
-			// The exception message is shown as part of the generic error
-			// popup to the user, however, Codecks only returns 404, server error
-			// or bad request, so nothing that would help the user.
-			return false;
-		}
+		// This may throw because of invalid credentials.
+		// Pass it on for Plastic to display in a popup and the log handler to log.
+		return extension.TestConnection(configuration);
 	}
 
 	public void LogCheckinResult(PlasticChangeset changeset, List<PlasticTask> tasks)

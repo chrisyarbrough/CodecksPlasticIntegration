@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace Xarbrough.CodecksPlasticIntegration;
 
 using Newtonsoft.Json.Linq;
@@ -12,22 +14,22 @@ public class CodecksService
 	private const string baseURL = "https://api.codecks.io/";
 
 	private readonly CodecksCredentials credentials;
-	private readonly WebClient webClient;
+	private readonly HttpClient client;
 	private readonly QueryProvider queryProvider = new QueryProvider();
 
 	public CodecksService(CodecksCredentials credentials)
 	{
+		client = new HttpClient();
 		this.credentials = credentials;
-		this.webClient = new WebClient();
+		credentials.Init(client);
 	}
 
 	/// <summary>
-	/// Before any other call to the API,
-	/// an authorized user must log into the service.
+	/// Before any other call to the API, an authorized user must log into the service.
 	/// </summary>
 	public void Login()
 	{
-		credentials.Login(webClient, baseURL);
+		credentials.Login(client, baseURL);
 	}
 
 	public IEnumerable<Card> GetPendingCards()
@@ -36,10 +38,13 @@ public class CodecksService
 		return LoadCardObjects(query);
 	}
 
-	public IEnumerable<Card> GetPendingCards(string assignee)
+	/// <summary>
+	/// Fetches cards that are assigned to the given user id (not email).
+	/// </summary>
+	public IEnumerable<Card> GetPendingCards(string userId)
 	{
 		string query = GetQueryFromFile("GetPendingCardsWithAssignee.json");
-		query = query.Replace("<ASSIGNEE>", assignee);
+		query = query.Replace("<ASSIGNEE>", userId);
 		return LoadCardObjects(query);
 	}
 
@@ -116,6 +121,45 @@ public class CodecksService
 			"{\"id\":\"" + cardGuid + "\",\"status\":\"started\"}");
 	}
 
+	private IEnumerable<Card> LoadCardObjects(string query)
+	{
+		dynamic result = SendAuthenticatedJsonRequest(query);
+		foreach (JProperty card in result.card)
+			yield return card.Value.ToObject<Card>();
+	}
+
+	private string UploadString(string url, string payload)
+	{
+		var content = new StringContent(payload, Encoding.UTF8, "application/json");
+		HttpResponseMessage response = client.PostAsync(url, content).Result;
+		response.EnsureSuccessStatusCode();
+		return response.Content.ReadAsStringAsync().Result;
+	}
+
+	private dynamic SendAuthenticatedJsonRequest(string jsonPayload)
+	{
+		// There seem to be special cases in which 'Connect' is not
+		// called for the extension (e.g. when switching between task-on-branch
+		// and task-on-changeset mode). In these cases, the user might
+		// not be logged in, but service calls are being issued.
+		if (credentials.HasToken == false)
+			Login();
+
+		credentials.Authenticate(client);
+		return SendJsonRequest(jsonPayload);
+	}
+
+	private dynamic SendJsonRequest(string jsonPayload)
+	{
+		string response = UploadString(baseURL, jsonPayload);
+		return JObject.Parse(response);
+	}
+
+	private string GetQueryFromFile(string fileName)
+	{
+		return queryProvider.GetQuery(fileName);
+	}
+
 	public static string GetCardBrowserURL(string account, string idLabel)
 	{
 		// There are several ways to display a card in the web app:
@@ -129,55 +173,5 @@ public class CodecksService
 		// https://mysubdomain.codecks.io/card/1w4
 
 		return "https://" + account + ".codecks.io/card/" + idLabel;
-	}
-
-	private IEnumerable<Card> LoadCardObjects(string query)
-	{
-		dynamic result = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty card in result.card)
-			yield return card.Value.ToObject<Card>();
-	}
-
-	private string UploadString(string url, string payload)
-	{
-		webClient.Headers["Content-Type"] = "application/json";
-		return webClient.UploadString(url, payload);
-	}
-
-	private dynamic SendAuthenticatedJsonRequest(string jsonPayload)
-	{
-		// There seem to be special cases in which 'Connect' is not
-		// called for the extension (e.g. when switching between task-on-branch
-		// and task-on-changeset mode). In these cases, the user might
-		// not be logged in, but service calls are being issues.
-		if (TryAuthenticate() == false)
-			Login();
-
-		credentials.Authenticate(webClient);
-		return SendJsonRequest(jsonPayload);
-	}
-
-	private bool TryAuthenticate()
-	{
-		try
-		{
-			credentials.Authenticate(webClient);
-			return true;
-		}
-		catch
-		{
-			return false;
-		}
-	}
-
-	private dynamic SendJsonRequest(string jsonPayload)
-	{
-		string response = UploadString(baseURL, jsonPayload);
-		return JObject.Parse(response);
-	}
-
-	private string GetQueryFromFile(string fileName)
-	{
-		return queryProvider.GetQuery(fileName);
 	}
 }
