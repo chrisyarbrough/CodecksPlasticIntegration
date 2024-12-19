@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 /// <summary>
 /// Cards in the Codecks web UI display a label such as '$24v'.

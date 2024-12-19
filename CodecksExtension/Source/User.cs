@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 /// <summary>
 /// A data transfer object that represents 

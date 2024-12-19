@@ -1,4 +1,4 @@
-﻿namespace Xarbrough.CodecksPlasticIntegration.Tests;
+namespace Xarbrough.CodecksPlasticIntegration.Tests;
 
 [TestFixture]
 public class CardIDConverterTests

@@ -1,4 +1,4 @@
-﻿{
+{
   "query": {
 	"user(<USER>)": [
 	  "fullName",

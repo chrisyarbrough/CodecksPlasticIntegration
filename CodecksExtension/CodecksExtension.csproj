@@ -1,8 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<Description>Adds support for the Codecks issue tracker to PlasticSCM.</Description>
 		<AssemblyVersion>1.5</AssemblyVersion>
+		<OutputPath>/Applications/PlasticSCM.app/Contents/extensions/codecks/</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
