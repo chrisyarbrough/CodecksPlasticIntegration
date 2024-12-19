@@ -81,7 +81,7 @@ sudo mkdir -p $EXT_DIR
 sudo chown -R username $EXT_DIR
 ```
 
-On Windows, right-click the folder, select properties and allow write for your user.
+On Windows, right-click the folder, select _properties_ and allow 'write' permissions for your user.
 
 ## Logging
 

@@ -224,7 +224,11 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 			configValues.AccountName.GetValue(),
 			taskId);
 
-		Process.Start(browserURL);
+		Process.Start(new ProcessStartInfo
+		{
+			FileName = browserURL,
+			UseShellExecute = true
+		});
 	}
 
 	/// <summary>
