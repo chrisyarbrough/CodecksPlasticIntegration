@@ -15,8 +15,8 @@ class LoggedIssueTrackerExtension : IPlasticIssueTrackerExtension
 	public LoggedIssueTrackerExtension(IPlasticIssueTrackerExtension extension)
 	{
 		this.extension = extension;
-		this.log = LogManager.GetLogger(GetExtensionName());
-		this.log.Info("Extension logging initialized.");
+		log = LogManager.GetLogger(GetExtensionName());
+		log.Info("Extension logging initialized.");
 	}
 
 	public string GetExtensionName() => extension.GetExtensionName();

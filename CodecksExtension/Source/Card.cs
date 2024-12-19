@@ -1,15 +1,18 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
+using Newtonsoft.Json;
+
 /// <summary>
-/// A data transfer object which represents 
+/// A data transfer object which represents
 /// the relevant properties of a Codecks card.
 /// </summary>
-public struct Card
+public record Card
 {
 	/// <summary>
 	/// A guid, e.g. '2e8ec154-521f-11ec-be97-07520a644149'
 	/// </summary>
-	public string cardId;
+	[JsonProperty("cardId")]
+	public readonly string CardId;
 
 	/// <summary>
 	/// A number, e.g. '123'. It seems this number
@@ -18,17 +21,20 @@ public struct Card
 	/// Strongly related to the card display label
 	/// (no terminology is known) which looks like e.g. '1w4'.
 	/// </summary>
-	public int accountSeq;
+	[JsonProperty("accountSeq")]
+	public readonly int AccountSeq;
 
 	/// <summary>
 	/// Plain text. Could also be called card header or name.
 	/// </summary>
-	public string title;
+	[JsonProperty("title")]
+	public readonly string Title;
 
 	/// <summary>
 	/// Plain text. Could also be called card body or description.
 	/// </summary>
-	public string content;
+	[JsonProperty("content")]
+	public readonly string Content;
 
 	/// <summary>
 	/// Examples:
@@ -36,10 +42,26 @@ public struct Card
 	/// done
 	/// started
 	/// </summary>
-	public string status;
+	[JsonProperty("status")]
+	public readonly string Status;
 
 	/// <summary>
 	/// The user guid assigned to this card.
 	/// </summary>
-	public string assignee;
+	[JsonProperty("assignee")]
+	public readonly string Assignee;
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Card"/> record.
+	/// </summary>
+	[JsonConstructor]
+	public Card(string cardId, int accountSeq, string title, string content, string status, string assignee)
+	{
+		CardId = cardId;
+		AccountSeq = accountSeq;
+		Title = title;
+		Content = content;
+		Status = status;
+		Assignee = assignee;
+	}
 }

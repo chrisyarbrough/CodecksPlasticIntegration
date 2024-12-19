@@ -66,7 +66,7 @@ sealed class ConfigValues
 		IssueTrackerConfiguration config)
 	{
 		var parameters = new List<IssueTrackerConfigurationParameter>();
-		foreach (var parameter in CreateDefaultParameters())
+		foreach (IssueTrackerConfigurationParameter parameter in CreateDefaultParameters())
 		{
 			// Overwrite the default values with the stored configuration.
 			if (TryGetValue(config, parameter.Name, out string storedValue))
