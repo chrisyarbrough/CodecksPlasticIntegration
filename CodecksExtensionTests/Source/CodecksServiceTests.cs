@@ -1,16 +1,32 @@
 namespace Xarbrough.CodecksPlasticIntegration.Tests;
 
-[Ignore("Run manually only.")]
+using Microsoft.Extensions.Configuration;
+
 public class CodecksServiceTests
 {
 	private CodecksService service;
-	private const string email = "";
+	private string email;
 
 	[OneTimeSetUp]
 	public void BeforeAll()
 	{
-		var credential = new CodecksCredentials(account: "", email, password: "");
-		service = new CodecksService(credential);
+		try
+		{
+			IConfigurationRoot configuration = new ConfigurationBuilder()
+				.AddUserSecrets<CodecksServiceTests>(optional: false)
+				.Build();
+
+			email = configuration["Codecks:Email"];
+			string account = configuration["Codecks:Account"];
+			string password = configuration["Codecks:Password"];
+
+			var credential = new CodecksCredentials(account, email, password);
+			service = new CodecksService(credential);
+		}
+		catch (Exception)
+		{
+			Assert.Inconclusive("Configuration is not valid. Skipping all tests. Please setup dotnet user-secrets.");
+		}
 	}
 
 	[SetUp]
@@ -29,7 +45,6 @@ public class CodecksServiceTests
 	[Test]
 	public void TestConnection()
 	{
-		// service.Login();
 		// Doesn't need the X-Auth-Token.
 		Assert.Greater(service.GetAccountId().Length, 0);
 	}

@@ -1,5 +1,6 @@
 <Project>
 	<PropertyGroup>
+		<!-- Unity DevOps Version Control 11 is not yet compatible with .NET 8-->
 		<TargetFramework>net7.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 

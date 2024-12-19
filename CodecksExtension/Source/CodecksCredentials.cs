@@ -21,9 +21,9 @@ public class CodecksCredentials
 		string email,
 		string password)
 	{
-		this.account = account;
-		this.email = email;
-		this.password = password;
+		this.account = account ?? throw new ArgumentNullException(nameof(account));
+		this.email = email ?? throw new ArgumentNullException(nameof(email));
+		this.password = password ?? throw new ArgumentNullException(nameof(password));
 	}
 
 	public void Init(HttpClient client)
