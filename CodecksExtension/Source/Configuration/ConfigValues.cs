@@ -1,4 +1,4 @@
-namespace Xarbrough.CodecksPlasticIntegration.Configuration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 using Codice.Client.IssueTracker;
 using System.Collections.Generic;
@@ -53,10 +53,7 @@ sealed class ConfigValues
 
 	private static ExtensionWorkingMode GetWorkingMode(IssueTrackerConfiguration config)
 	{
-		if (config == null)
-			return ExtensionWorkingMode.TaskOnBranch;
-
-		if (config.WorkingMode == ExtensionWorkingMode.None)
+		if (config == null || config.WorkingMode == ExtensionWorkingMode.None)
 			return ExtensionWorkingMode.TaskOnBranch;
 
 		return config.WorkingMode;

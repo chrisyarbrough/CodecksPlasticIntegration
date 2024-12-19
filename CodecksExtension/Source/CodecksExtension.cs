@@ -1,6 +1,5 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
-using Configuration;
 using Codice.Client.IssueTracker;
 using Codice.Utils;
 using System.Diagnostics;
@@ -30,7 +29,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// Converts the card 'accountSeq' value to a three-letter
 	/// display label and vice versa.
 	/// </summary>
-	private readonly CardIDConverter idConverter = new CardIDConverter();
+	private readonly CardIdConverter idConverter = new CardIdConverter();
 
 	/// <summary>
 	/// A helper class to interface with the Codecks API.
@@ -90,7 +89,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	public void Disconnect()
 	{
-		// Nothing to clean up, but the interface defines this method.
+		service.Dispose();
 	}
 
 	/// <summary>
@@ -260,7 +259,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	{
 		// It is possible to implement different scenarios here, each of which
 		// would require some additional user settings:
-		// - Add a comment to the card simply stating that a checkin was performed.
+		// - Add a comment to the card simply stating that a check-in was performed.
 		// - Include meta info (changeset comment, time, etc.).
 		// - Task on changeset mode: Set the card status to e.g. review or done.
 		// - Task on branch mode: Add status comments or detect merge to main.
@@ -269,8 +268,11 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// involved merge-pipeline etc. Probably best to only support changeset mode.
 	}
 
+	/// <summary>
+	/// Called in the task-on-changeset mode when the user modifies the linked tasks.
+	/// </summary>
 	public void UpdateLinkedTasksToChangeset(PlasticChangeset changeset, List<string> tasks)
 	{
-		// TODO: Implement UpdateLinkedTasksToChangeset.
+		// This is currently not showing in the Plastic UI, so it is not implemented.
 	}
 }
