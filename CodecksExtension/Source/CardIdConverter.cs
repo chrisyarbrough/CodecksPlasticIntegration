@@ -19,7 +19,7 @@ namespace Xarbrough.CodecksPlasticIntegration;
 /// Daniel Berndt, one of the Codecks devs, for help. He posted this:
 /// https://gist.github.com/danielberndt/eb59230c4ac5c2fd7edaa27dfb2b2e89
 /// </remarks>
-class CardIDConverter
+class CardIdConverter
 {
 	private readonly string letters;
 	private readonly int startVal;
@@ -27,12 +27,12 @@ class CardIDConverter
 	private readonly int length;
 	private readonly Dictionary<char, int> letterToIndex;
 
-	public CardIDConverter() : this(
+	public CardIdConverter() : this(
 		letters: "123456789acefghijkoqrsuvwxyz",
 		startVal: 28 * 29 - 1,
 		implicitZero: true) { }
 
-	private CardIDConverter(string letters, int startVal, bool implicitZero)
+	private CardIdConverter(string letters, int startVal, bool implicitZero)
 	{
 		this.letters = letters;
 		this.startVal = startVal;

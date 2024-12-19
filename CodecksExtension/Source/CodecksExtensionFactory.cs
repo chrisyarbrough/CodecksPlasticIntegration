@@ -1,6 +1,5 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
-using Configuration;
 using Codice.Client.IssueTracker;
 
 /// <summary>

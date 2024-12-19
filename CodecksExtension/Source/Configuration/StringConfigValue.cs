@@ -1,4 +1,4 @@
-namespace Xarbrough.CodecksPlasticIntegration.Configuration;
+namespace Xarbrough.CodecksPlasticIntegration;
 
 using Codice.Client.IssueTracker;
 

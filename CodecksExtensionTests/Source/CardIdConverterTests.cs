@@ -1,17 +1,17 @@
 namespace Xarbrough.CodecksPlasticIntegration.Tests;
 
-public class CardIDConverterTests
+public class CardIdConverterTests
 {
 	[TestCaseSource(nameof(testCases))]
 	public void SeqToInt_ValidString_ReturnsValidNumber(string seq, int number)
 	{
-		Assert.AreEqual(number, new CardIDConverter().SeqToInt(seq));
+		Assert.AreEqual(number, new CardIdConverter().SeqToInt(seq));
 	}
 
 	[TestCaseSource(nameof(testCases))]
 	public void IntToSeq_ValidNumber_ReturnsValidString(string seq, int number)
 	{
-		Assert.AreEqual(seq, new CardIDConverter().IntToSeq(number));
+		Assert.AreEqual(seq, new CardIdConverter().IntToSeq(number));
 	}
 
 	/// <summary>

@@ -1,15 +1,14 @@
-using System.Text;
-
 namespace Xarbrough.CodecksPlasticIntegration;
 
 using Newtonsoft.Json.Linq;
 using System.Linq;
 using System.Net;
+using System.Text;
 
 /// <summary>
 /// Interfaces with the Codecks web API.
 /// </summary>
-public class CodecksService
+public sealed class CodecksService : IDisposable
 {
 	private const string baseURL = "https://api.codecks.io/";
 
@@ -82,12 +81,12 @@ public class CodecksService
 		}
 	}
 
-	public string FindUserIdByMail(string accountID, string email)
+	public string FindUserIdByMail(string accountId, string email)
 	{
 		// This could be improved by using a more powerful query
 		// which directly finds the user by email on the server.
 		string query = GetQueryFromFile("GetAllUsers.json");
-		query = query.Replace("<ACCOUNT>", accountID);
+		query = query.Replace("<ACCOUNT>", accountId);
 
 		dynamic data = SendAuthenticatedJsonRequest(query);
 		foreach (JProperty property in data.userEmail)
@@ -109,8 +108,8 @@ public class CodecksService
 		string query = GetQueryFromFile("GetUserEmail.json");
 		query = query.Replace("<USER>", userId);
 		dynamic result = SendJsonRequest(query);
-		string emailID = result.user[userId].primaryEmail;
-		return result.userEmail[emailID].email;
+		string emailId = result.user[userId].primaryEmail;
+		return result.userEmail[emailId].email;
 	}
 
 	public void SetCardStatusToStarted(string cardGuid)
@@ -174,4 +173,6 @@ public class CodecksService
 
 		return "https://" + account + ".codecks.io/card/" + idLabel;
 	}
+
+	public void Dispose() => client.Dispose();
 }

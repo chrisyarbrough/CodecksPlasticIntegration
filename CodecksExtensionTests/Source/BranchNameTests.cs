@@ -36,21 +36,21 @@ public class BranchNameTests
 	}
 
 	[Test]
-	public void TryExtractTaskIDFromBranchName_BranchPrefix_Mismatch()
+	public void TryExtractTaskIdFromBranchName_BranchPrefix_Mismatch()
 	{
 		// If a branch prefix is configured, branches without the prefix
 		// should always fail the extraction test.
 		bool success = BranchName.TryExtractTaskFromShortName(
 			shortBranchName: "123",
 			branchPrefix: "nem-",
-			taskID: out string _);
+			taskId: out string _);
 
 		Assert.IsFalse(success);
 	}
 
 	[TestCase("")]
 	[TestCase(null)]
-	public void TryExtractTaskIDFromBranchName_NoBranchPrefix_Match(string branchPrefix)
+	public void TryExtractTaskIdFromBranchName_NoBranchPrefix_Match(string branchPrefix)
 	{
 		// If no prefix is configured, the branch short name
 		// is likely a valid task name. However, this doesn't mean
@@ -62,7 +62,7 @@ public class BranchNameTests
 		bool success = BranchName.TryExtractTaskFromShortName(
 			shortBranchName,
 			branchPrefix,
-			taskID: out string taskId);
+			taskId: out string taskId);
 
 		Assert.IsTrue(success);
 		Assert.AreEqual(shortBranchName, taskId);
@@ -71,13 +71,13 @@ public class BranchNameTests
 	[TestCase("nem-123", "nem-", "123")]
 	[TestCase("xd-eee", "xd-", "eee")]
 	[TestCase("cod", "", "cod")]
-	public void TryExtractTaskIDFromBranchName_ValidCases(
+	public void TryExtractTaskIdFromBranchName_ValidCases(
 		string shortBranchName, string branchPrefix, string expectedTaskId)
 	{
 		bool success = BranchName.TryExtractTaskFromShortName(
 			shortBranchName,
 			branchPrefix,
-			taskID: out string taskId);
+			taskId: out string taskId);
 
 		Assert.IsTrue(success);
 		Assert.AreEqual(expectedTaskId, taskId);

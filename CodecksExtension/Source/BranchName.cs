@@ -29,7 +29,7 @@ static class BranchName
 	}
 
 	public static bool TryExtractTaskFromShortName(
-		string shortBranchName, string branchPrefix, out string taskID)
+		string shortBranchName, string branchPrefix, out string taskId)
 	{
 		branchPrefix ??= string.Empty;
 
@@ -38,11 +38,11 @@ static class BranchName
 		// whether the branch name is a valid task ID or not. So simply try sending it.
 		if (shortBranchName.StartsWith(branchPrefix) == false)
 		{
-			taskID = null;
+			taskId = null;
 			return false;
 		}
 
-		taskID = shortBranchName[branchPrefix.Length..];
+		taskId = shortBranchName[branchPrefix.Length..];
 		return true;
 	}
 }
