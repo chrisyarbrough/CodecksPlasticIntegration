@@ -1,6 +1,5 @@
 namespace Xarbrough.CodecksPlasticIntegration.Tests;
 
-[TestFixture]
 public class CardIDConverterTests
 {
 	[TestCaseSource(nameof(testCases))]
