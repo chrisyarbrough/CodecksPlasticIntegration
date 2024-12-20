@@ -1,0 +1,16 @@
+{
+  "query": {
+    "_root": [
+      {
+        "account": [
+          {
+            "decks({\"title\":{\"op\":\"eq\",\"value\":\"<DECK_TITLE>\"}})": [
+              "id",
+              "project"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

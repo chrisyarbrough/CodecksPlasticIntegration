@@ -1,11 +1,14 @@
 namespace Xarbrough.CodecksPlasticIntegration.Tests;
 
+using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 
+[Category("EndToEnd"), Explicit]
 public class CodecksServiceTests
 {
 	private CodecksService service;
 	private string email;
+	private static int testCount;
 
 	[OneTimeSetUp]
 	public void BeforeAll()
@@ -29,11 +32,15 @@ public class CodecksServiceTests
 		}
 	}
 
-	[SetUp]
-	public void BeforeEach()
+	[TearDown]
+	public void AfterEach()
 	{
-		// Avoid rate limiting.
-		Thread.Sleep(3000);
+		if (testCount > 0)
+		{
+			// Avoid rate limiting.
+			Thread.Sleep(5000);
+		}
+		testCount++;
 	}
 
 	[Test]
@@ -46,31 +53,64 @@ public class CodecksServiceTests
 	public void TestConnection()
 	{
 		// Doesn't need the X-Auth-Token.
-		Assert.Greater(service.GetAccountId().Length, 0);
+		string accountId = service.GetAccountId();
+		TestContext.WriteLine(accountId);
+		accountId.Should().NotBeNullOrEmpty();
+	}
+
+	[Test]
+	public void GetCard()
+	{
+		service.Login();
+		int accountSeq = new CardIdConverter().SeqToInt("113");
+		Card card = service.GetCard(accountSeq);
+		TestContext.WriteLine(card.ToString());
+		card.Should().NotBeNull();
 	}
 
 	[Test]
 	public void GetPendingCards()
 	{
 		service.Login();
-		var result = service.GetPendingCards().ToArray();
-		Assert.Greater(result.Length, 0);
+		Card[] result = service.GetPendingCards().ToArray();
+		TestContext.WriteLine(string.Join(',', result.Select(c => c.ToString())));
+		result.Should().NotBeEmpty();
 	}
 
 	[Test]
 	public void GetPendingCardsWithAssignee()
 	{
 		service.Login();
-		Thread.Sleep(1000);
 
 		// This is a special case: Plastic gives use the email of the user that is logged into Plastic (e.g. Unity account),
 		// but we want to filter by the Codecks account email, which the user has configured in the extension settings.
-
 		string accountId = service.GetAccountId();
 		string userId = service.FindUserIdByMail(accountId, email);
-		var cards = service.GetPendingCards(userId).ToArray();
+		var cards = service.GetPendingCards(userId: userId).ToArray();
+		cards.Should().NotBeEmpty();
+	}
 
-		Assert.Greater(cards.Length, 0);
+	[Test]
+	public void GetPendingCardsByDeck()
+	{
+		service.Login();
+		(string id, string project) deck = service.GetDeck("Art");
+		IEnumerable<Card> cards = service.GetPendingCards(deckId: deck.id).ToArray();
+		cards.Should().NotBeEmpty();
+	}
+
+	[Test]
+	public void GetPendingCardsWithAssigneeAndDeck()
+	{
+		service.Login();
+
+		// This is a special case: Plastic gives use the email of the user that is logged into Plastic (e.g. Unity account),
+		// but we want to filter by the Codecks account email, which the user has configured in the extension settings.
+		string accountId = service.GetAccountId();
+		string userId = service.FindUserIdByMail(accountId, email);
+		(string id, string project) deck = service.GetDeck("Bugs");
+		var cards = service.GetPendingCards(userId: userId, deckId: deck.id).ToArray();
+		cards.Should().NotBeEmpty();
 	}
 
 	[Test]
@@ -79,6 +119,24 @@ public class CodecksServiceTests
 		service.Login();
 		string accountId = service.GetAccountId();
 		var users = service.GetAllUsers(accountId).ToArray();
-		Assert.Greater(users.Length, 0);
+		users.Should().NotBeEmpty();
+	}
+
+	[Test]
+	public void GetDecks()
+	{
+		service.Login();
+		var decks = service.GetDecks().ToArray();
+		decks.Should().NotBeEmpty();
+	}
+
+	[Test]
+	public void GetDeck()
+	{
+		service.Login();
+		(string id, string project) deck = service.GetDeck("Bugs");
+		deck.Should().NotBeNull();
+		deck.id.Should().NotBeEmpty();
+		deck.project.Should().NotBeEmpty();
 	}
 }

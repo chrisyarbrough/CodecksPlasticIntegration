@@ -19,6 +19,7 @@ sealed class ConfigValues
 	public readonly ConfigValue<string> Email;
 	public readonly ConfigValue<string> Password;
 	public readonly ConfigValue<string> AccountName;
+	public readonly ConfigValue<string> DeckFilter;
 
 	private readonly IssueTrackerConfiguration configuration;
 
@@ -30,6 +31,7 @@ sealed class ConfigValues
 		Email = new StringConfigValue("E-Mail", configuration);
 		Password = new StringConfigValue("Password", configuration);
 		AccountName = new StringConfigValue("Account Name", configuration);
+		DeckFilter = new StringConfigValue("Deck Filter", configuration);
 	}
 
 	/// <summary>
@@ -98,7 +100,6 @@ sealed class ConfigValues
 			Name = BranchPrefix.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.BranchPrefix,
-			IsGlobal = true
 		};
 
 		yield return new IssueTrackerConfigurationParameter
@@ -106,7 +107,6 @@ sealed class ConfigValues
 			Name = AccountName.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.Text,
-			IsGlobal = false
 		};
 
 		yield return new IssueTrackerConfigurationParameter
@@ -114,7 +114,6 @@ sealed class ConfigValues
 			Name = Email.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.User,
-			IsGlobal = false
 		};
 
 		yield return new IssueTrackerConfigurationParameter
@@ -122,7 +121,13 @@ sealed class ConfigValues
 			Name = Password.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.Password,
-			IsGlobal = false
+		};
+
+		yield return new IssueTrackerConfigurationParameter
+		{
+			Name = DeckFilter.Key,
+			Value = string.Empty,
+			Type = IssueTrackerConfigurationParameterType.Text,
 		};
 	}
 }

@@ -102,7 +102,11 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public List<PlasticTask> GetPendingTasks()
 	{
-		IEnumerable<Card> cards = service.GetPendingCards();
+		string deckTitle = configValues.DeckFilter.GetValue();
+		string deckId = null;
+		if (!string.IsNullOrEmpty(deckTitle))
+			deckId = service.GetDeck(deckTitle).id;
+		IEnumerable<Card> cards = service.GetPendingCards(deckId: deckId);
 		return Convert(cards);
 	}
 
@@ -117,7 +121,13 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// Therefore, we use the email from the configuration instead.
 		string accountId = service.GetAccountId();
 		string userId = service.FindUserIdByMail(accountId, configValues.Email.GetValue());
-		IEnumerable<Card> cards = service.GetPendingCards(userId);
+
+		string deckTitle = configValues.DeckFilter.GetValue();
+		string deckId = null;
+		if (!string.IsNullOrEmpty(deckTitle))
+			deckId = service.GetDeck(deckTitle).id;
+
+		IEnumerable<Card> cards = service.GetPendingCards(userId: userId, deckId: deckId);
 		return Convert(cards);
 	}
 
