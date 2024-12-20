@@ -31,19 +31,37 @@ public sealed class CodecksService : IDisposable
 		credentials.Login(client, baseURL);
 	}
 
-	public IEnumerable<Card> GetPendingCards()
+	public IEnumerable<Card> GetPendingCards(string userId = null, string deckId = null)
 	{
-		string query = GetQueryFromFile("GetPendingCards.json");
-		return LoadCardObjects(query);
-	}
+		string query;
 
-	/// <summary>
-	/// Fetches cards that are assigned to the given user id (not email).
-	/// </summary>
-	public IEnumerable<Card> GetPendingCards(string userId)
-	{
-		string query = GetQueryFromFile("GetPendingCardsWithAssignee.json");
-		query = query.Replace("<ASSIGNEE>", userId);
+		if (userId != null)
+		{
+			if (deckId != null)
+			{
+				query = GetQueryFromFile("GetPendingCardsWithAssigneeAndDeck.json");
+				query = query.Replace("<ASSIGNEE>", userId);
+				query = query.Replace("<DECK_ID>", deckId);
+			}
+			else
+			{
+				query = GetQueryFromFile("GetPendingCardsWithAssignee.json");
+				query = query.Replace("<ASSIGNEE>", userId);
+			}
+		}
+		else
+		{
+			if (deckId != null)
+			{
+				query = GetQueryFromFile("GetPendingCardsWithDeck.json");
+				query = query.Replace("<DECK_ID>", deckId);
+			}
+			else
+			{
+				query = GetQueryFromFile("GetPendingCards.json");
+			}
+		}
+
 		return LoadCardObjects(query);
 	}
 
@@ -79,6 +97,36 @@ public sealed class CodecksService : IDisposable
 				(string)prop.Value["userId"],
 				(string)prop.Value["email"]);
 		}
+	}
+
+	public IEnumerable<(string, string, string)> GetDecks()
+	{
+		string query = GetQueryFromFile("GetDecks.json");
+		dynamic data = SendAuthenticatedJsonRequest(query);
+		foreach (JProperty property in data.deck)
+		{
+			string id = (string)property.Value["id"];
+			string title = (string)property.Value["title"];
+			string project = (string)property.Value["project"];
+			yield return (id, title, project);
+		}
+	}
+
+	public (string id, string project) GetDeck(string title)
+	{
+		if (string.IsNullOrWhiteSpace(title))
+			throw new ArgumentException(null, nameof(title));
+
+		string query = GetQueryFromFile("GetDeck.json");
+		query = query.Replace("<DECK_TITLE>", title);
+		dynamic data = SendAuthenticatedJsonRequest(query);
+		foreach (JProperty property in data.deck)
+		{
+			string id = (string)property.Value["id"];
+			string project = (string)property.Value["project"];
+			return (id, project);
+		}
+		return default;
 	}
 
 	public string FindUserIdByMail(string accountId, string email)
@@ -123,6 +171,10 @@ public sealed class CodecksService : IDisposable
 	private IEnumerable<Card> LoadCardObjects(string query)
 	{
 		dynamic result = SendAuthenticatedJsonRequest(query);
+
+		if (result.card == null)
+			yield break;
+
 		foreach (JProperty card in result.card)
 			yield return card.Value.ToObject<Card>();
 	}

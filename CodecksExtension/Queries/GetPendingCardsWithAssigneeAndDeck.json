@@ -4,7 +4,7 @@
       {
         "account": [
           {
-            "cards({\"status\":{\"op\":\"neq\",\"value\":\"done\"},\"visibility\":\"default\"})": [
+            "cards({\"$and\":[{\"assigneeId\":[\"<ASSIGNEE>\"]},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}},{\"deckId\":{\"op\":\"eq\",\"value\":\"<DECK_ID>\"}}],\"visibility\":\"default\"})": [
               "accountSeq",
               "title",
               "cardId",

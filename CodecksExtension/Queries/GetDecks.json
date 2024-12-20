@@ -1,0 +1,17 @@
+{
+  "query": {
+    "_root": [
+      {
+        "account": [
+          {
+            "decks": [
+              "id",
+              "title",
+              "project"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

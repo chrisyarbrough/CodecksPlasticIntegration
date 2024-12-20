@@ -4,14 +4,13 @@
       {
         "account": [
           {
-            "cards({\"status\":{\"op\":\"neq\",\"value\":\"done\"},\"visibility\":\"default\"})": [
+            "cards({\"$and\":[{\"deckId\":[\"<DECK_ID>\"]},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}}],\"visibility\":\"default\"})": [
               "accountSeq",
               "title",
               "cardId",
               "content",
               "status",
-              "assignee",
-              "deck"
+              "assignee"
             ]
           }
         ]
