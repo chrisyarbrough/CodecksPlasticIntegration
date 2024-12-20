@@ -183,6 +183,7 @@ public sealed class CodecksService : IDisposable
 	{
 		var content = new StringContent(payload, Encoding.UTF8, "application/json");
 		HttpResponseMessage response = client.PostAsync(url, content).Result;
+		RateLimitHelper.Validate(response);
 		response.EnsureSuccessStatusCode();
 		return response.Content.ReadAsStringAsync().Result;
 	}
