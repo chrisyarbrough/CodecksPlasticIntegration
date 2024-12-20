@@ -87,19 +87,6 @@ sudo chown -R username $EXT_DIR
 
 On Windows, right-click the folder, select _properties_ and allow 'write' permissions for your user.
 
-## Logging
-
-In the `~/.plastic4/plasticx.log.conf` add:
-
-```xml
-<logger name="Codecks">
-  <level value="DEBUG" />
-  <appender-ref ref="DebugAppender" />
-</logger>
-```
-
-On windows, the file is likely in the installation directory.
-
 ## Testing
 
 For the regular tests:
