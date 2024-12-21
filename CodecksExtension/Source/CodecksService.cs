@@ -33,62 +33,47 @@ public sealed class CodecksService : IDisposable
 
 	public IEnumerable<Card> GetPendingCards(string userId = null, string deckId = null)
 	{
-		string query;
+		Dictionary<(bool hasUserId, bool hasDeckId), string> filterLookup = new()
+		{
+			{ (true, true), "PendingCardsWithAssigneeAndDeck" },
+			{ (true, false), "PendingCardsWithAssignee" },
+			{ (false, true), "PendingCardsWithDeck" },
+			{ (false, false), "PendingCards" }
+		};
 
-		if (userId != null)
-		{
-			if (deckId != null)
-			{
-				query = GetQueryFromFile("GetPendingCardsWithAssigneeAndDeck.json");
-				query = query.Replace("<ASSIGNEE>", userId);
-				query = query.Replace("<DECK_ID>", deckId);
-			}
-			else
-			{
-				query = GetQueryFromFile("GetPendingCardsWithAssignee.json");
-				query = query.Replace("<ASSIGNEE>", userId);
-			}
-		}
-		else
-		{
-			if (deckId != null)
-			{
-				query = GetQueryFromFile("GetPendingCardsWithDeck.json");
-				query = query.Replace("<DECK_ID>", deckId);
-			}
-			else
-			{
-				query = GetQueryFromFile("GetPendingCards.json");
-			}
-		}
+		string filter = queryProvider.GetFilter(filterLookup[(userId != null, deckId != null)]);
+		string query = GetQuery("GetPendingCardsBase.json")
+			.Replace("<FILTER", filter)
+			.Replace("<ASSIGNEE>", userId)
+			.Replace("<DECK_ID>", deckId);
 
 		return LoadCardObjects(query);
 	}
 
 	public Card GetCard(int accountSeq)
 	{
-		string query = GetQueryFromFile("GetCard.json");
+		string query = GetQuery("GetCard.json");
 		query = query.Replace("<ACCOUNT_SEQ>", accountSeq.ToString());
 		return LoadCardObjects(query).First();
 	}
 
 	public IEnumerable<Card> GetCards(IEnumerable<string> accountSeqs)
 	{
-		string query = GetQueryFromFile("GetCard.json");
+		string query = GetQuery("GetCard.json");
 		query = query.Replace("<ACCOUNT_SEQ>", string.Join(",", accountSeqs));
 		return LoadCardObjects(query);
 	}
 
 	public string GetAccountId()
 	{
-		string query = GetQueryFromFile("GetAccountId.json");
+		string query = GetQuery("GetAccountId.json");
 		dynamic result = SendJsonRequest(query);
 		return result._root.account;
 	}
 
 	public IEnumerable<User> GetAllUsers(string accountId)
 	{
-		string query = GetQueryFromFile("GetAllUsers.json");
+		string query = GetQuery("GetAllUsers.json");
 		query = query.Replace("<ACCOUNT>", accountId);
 		dynamic result = SendAuthenticatedJsonRequest(query);
 		foreach (JProperty prop in result.userEmail)
@@ -101,7 +86,7 @@ public sealed class CodecksService : IDisposable
 
 	public IEnumerable<(string, string, string)> GetDecks()
 	{
-		string query = GetQueryFromFile("GetDecks.json");
+		string query = GetQuery("GetDecks.json");
 		dynamic data = SendAuthenticatedJsonRequest(query);
 		foreach (JProperty property in data.deck)
 		{
@@ -117,7 +102,7 @@ public sealed class CodecksService : IDisposable
 		if (string.IsNullOrWhiteSpace(title))
 			throw new ArgumentException(null, nameof(title));
 
-		string query = GetQueryFromFile("GetDeck.json");
+		string query = GetQuery("GetDeck.json");
 		query = query.Replace("<DECK_TITLE>", title);
 		dynamic data = SendAuthenticatedJsonRequest(query);
 		foreach (JProperty property in data.deck)
@@ -133,7 +118,7 @@ public sealed class CodecksService : IDisposable
 	{
 		// This could be improved by using a more powerful query
 		// which directly finds the user by email on the server.
-		string query = GetQueryFromFile("GetAllUsers.json");
+		string query = GetQuery("GetAllUsers.json");
 		query = query.Replace("<ACCOUNT>", accountId);
 
 		dynamic data = SendAuthenticatedJsonRequest(query);
@@ -153,7 +138,7 @@ public sealed class CodecksService : IDisposable
 		if (string.IsNullOrEmpty(userId))
 			return string.Empty;
 
-		string query = GetQueryFromFile("GetUserEmail.json");
+		string query = GetQuery("GetUserEmail.json");
 		query = query.Replace("<USER>", userId);
 		dynamic result = SendJsonRequest(query);
 		string emailId = result.user[userId].primaryEmail;
@@ -207,10 +192,7 @@ public sealed class CodecksService : IDisposable
 		return JObject.Parse(response);
 	}
 
-	private string GetQueryFromFile(string fileName)
-	{
-		return queryProvider.GetQuery(fileName);
-	}
+	private string GetQuery(string fileName) => queryProvider.GetQuery(fileName);
 
 	public static string GetCardBrowserURL(string account, string idLabel)
 	{

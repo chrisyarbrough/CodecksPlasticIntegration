@@ -27,14 +27,21 @@ class QueryProvider
 		return query;
 	}
 
+	public string GetFilter(string fileName)
+	{
+		string filter = File.ReadAllText($"Queries/Filters/{fileName}");
+		filter = filter.Replace("'", "\\\"");
+		return Minimize(filter);
+	}
+
 	private string LoadQuery(string fileName)
 	{
 		string directory = Path.GetDirectoryName(typeof(QueryProvider).Assembly.Location);
 		string content = File.ReadAllText(directory + "/Queries/" + fileName);
-		return MinimizeJson(content);
+		return Minimize(content);
 	}
 
-	private string MinimizeJson(string json)
+	public string Minimize(string json)
 	{
 		stringBuilder.Clear();
 		foreach (char c in json)

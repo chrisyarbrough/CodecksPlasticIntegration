@@ -1,0 +1,7 @@
+cards({
+	'$and': [
+		{ 'assigneeId': ['<ASSIGNEE>'] },
+		{ 'status': {'op': 'neq', 'value': 'done'} }
+	],
+	'visibility':'default'
+})

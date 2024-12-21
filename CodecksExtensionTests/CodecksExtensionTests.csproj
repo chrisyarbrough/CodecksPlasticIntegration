@@ -21,4 +21,8 @@
 		<Using Include="NUnit.Framework" />
 	</ItemGroup>
 
+	<Target Name="CopyLibs" AfterTargets="Build">
+		<Copy SourceFiles="..\Libraries\log4net.dll" DestinationFolder="$(OutputPath)" />
+	</Target>
+
 </Project>
