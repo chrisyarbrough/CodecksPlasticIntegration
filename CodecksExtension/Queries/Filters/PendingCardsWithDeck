@@ -1,0 +1,7 @@
+cards({
+	'$and': [
+		{ 'deckId': ['<DECK_ID>'] },
+		{ 'status': {'op': 'neq', 'value': 'done'} }
+	],
+	'visibility': 'default'
+})

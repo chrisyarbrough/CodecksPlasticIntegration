@@ -28,7 +28,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Queries\*.json">
+	  <None Update="Queries\*.*">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Update="Queries\Filters\*">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
 	</ItemGroup>

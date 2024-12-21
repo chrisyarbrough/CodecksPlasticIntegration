@@ -1,0 +1,4 @@
+cards({
+	'status': { 'op': 'neq', 'value': 'done' },
+	'visibility': 'default'
+})

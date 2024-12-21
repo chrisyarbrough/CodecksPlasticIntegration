@@ -10,7 +10,8 @@
               "cardId",
               "content",
               "status",
-              "assignee"
+              "assignee",
+              "deck"
             ]
           }
         ]

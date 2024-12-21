@@ -8,7 +8,6 @@ public class CodecksServiceTests
 {
 	private CodecksService service;
 	private string email;
-	private static int testCount;
 
 	[OneTimeSetUp]
 	public void BeforeAll()
@@ -35,15 +34,11 @@ public class CodecksServiceTests
 	[TearDown]
 	public void AfterEach()
 	{
-		if (testCount > 0)
-		{
-			// Avoid rate limiting.
-			Thread.Sleep(5000);
-		}
-		testCount++;
+		// Avoid rate limiting.
+		Thread.Sleep(5000);
 	}
 
-	[Test]
+	[Test, Order(1)]
 	public void Login()
 	{
 		service.Login();
