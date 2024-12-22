@@ -1,0 +1,16 @@
+{
+  "query": {
+    "_root": [
+      {
+        "account": [
+          {
+            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+              "id",
+              "name"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
