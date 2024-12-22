@@ -113,6 +113,31 @@ public sealed class CodecksService : IDisposable
 		}
 		return default;
 	}
+	
+	public IEnumerable<(string id, string name)> GetProjects()
+	{
+		string query = GetQuery("GetProjects.json");
+		dynamic data = SendAuthenticatedJsonRequest(query);
+		foreach (JProperty property in data.project)
+		{
+			string id = (string)property.Value["id"];
+			string name = (string)property.Value["name"];
+			yield return (id, name);
+		}
+	}
+
+	public string GetProjectId(string name)
+	{
+		string query = GetQuery("GetProjects.json");
+		query = query.Replace("<PROJECT>", name);
+		dynamic data = SendAuthenticatedJsonRequest(query);
+		foreach (JProperty property in data.project)
+		{
+			return (string)property.Value["id"];
+		}
+
+		return null;
+	}
 
 	public string FindUserIdByMail(string accountId, string email)
 	{

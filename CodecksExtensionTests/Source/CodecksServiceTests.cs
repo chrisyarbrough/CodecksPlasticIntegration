@@ -134,4 +134,20 @@ public class CodecksServiceTests
 		deck.id.Should().NotBeEmpty();
 		deck.project.Should().NotBeEmpty();
 	}
+	
+	[Test]
+	public void GetProjects()
+	{
+		service.Login(); 
+		(string id, string name)[] projects = service.GetProjects().ToArray();
+		projects.Should().NotBeEmpty();
+	}
+
+	[Test]
+	public void GetProject()
+	{
+		service.Login();
+		string id = service.GetProjectId("CodecksPlasticIntegration");
+		id.Should().NotBeNullOrEmpty();
+	}
 }
