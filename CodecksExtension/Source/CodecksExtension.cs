@@ -229,13 +229,13 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	public void OpenTaskExternally(string taskId)
 	{
-		string browserURL = CodecksService.GetCardBrowserURL(
+		string browserUrl = CodecksService.GetCardBrowserUrl(
 			configValues.AccountName.GetValue(),
 			taskId);
 
 		Process.Start(new ProcessStartInfo
 		{
-			FileName = browserURL,
+			FileName = browserUrl,
 			UseShellExecute = true
 		});
 	}

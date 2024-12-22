@@ -10,11 +10,11 @@ using System.Text;
 /// </summary>
 public sealed class CodecksService : IDisposable
 {
-	private const string baseURL = "https://api.codecks.io/";
+	private const string baseUrl = "https://api.codecks.io/";
 
 	private readonly CodecksCredentials credentials;
 	private readonly HttpClient client;
-	private readonly QueryProvider queryProvider = new QueryProvider();
+	private readonly QueryProvider queryProvider = new();
 
 	public CodecksService(CodecksCredentials credentials)
 	{
@@ -28,7 +28,7 @@ public sealed class CodecksService : IDisposable
 	/// </summary>
 	public void Login()
 	{
-		credentials.Login(client, baseURL);
+		credentials.Login(client, baseUrl);
 	}
 
 	public IEnumerable<Card> GetPendingCards(string userId = null, string deckId = null)
@@ -149,7 +149,7 @@ public sealed class CodecksService : IDisposable
 	{
 		// The card id is the full-length guid, not to confuse with the accountSeq.
 		UploadString(
-			baseURL + "dispatch/cards/update",
+			baseUrl + "dispatch/cards/update",
 			"{\"id\":\"" + cardGuid + "\",\"status\":\"started\"}");
 	}
 
@@ -188,13 +188,13 @@ public sealed class CodecksService : IDisposable
 
 	private dynamic SendJsonRequest(string jsonPayload)
 	{
-		string response = UploadString(baseURL, jsonPayload);
+		string response = UploadString(baseUrl, jsonPayload);
 		return JObject.Parse(response);
 	}
 
 	private string GetQuery(string fileName) => queryProvider.GetQuery(fileName);
 
-	public static string GetCardBrowserURL(string account, string idLabel)
+	public static string GetCardBrowserUrl(string account, string idLabel)
 	{
 		// There are several ways to display a card in the web app:
 		// Within the deck:

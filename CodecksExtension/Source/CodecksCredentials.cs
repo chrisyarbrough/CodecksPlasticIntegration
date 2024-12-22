@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 
-public class CodecksCredentials
+public partial class CodecksCredentials
 {
 	public bool HasToken => !string.IsNullOrEmpty(token);
 
@@ -34,7 +34,7 @@ public class CodecksCredentials
 
 	public void Login(HttpClient client, string baseURL)
 	{
-		var json = JsonConvert.SerializeObject(new
+		string json = JsonConvert.SerializeObject(new
 		{
 			email,
 			password
@@ -60,10 +60,10 @@ public class CodecksCredentials
 		// beta version of PlasticX.
 		if (headers.TryGetValues("Set-Cookie", out IEnumerable<string> cookies))
 		{
-			foreach (var header in cookies)
+			foreach (string header in cookies)
 			{
 				// Use Regex to match the token pattern
-				Match match = Regex.Match(header, "at=(.*?);");
+				Match match = ExtractTokenRegex().Match(header);
 
 				if (match.Success)
 				{
@@ -86,4 +86,7 @@ public class CodecksCredentials
 
 		client.DefaultRequestHeaders.Add("X-Auth-Token", token);
 	}
+
+	[GeneratedRegex("at=(.*?);")]
+	private static partial Regex ExtractTokenRegex();
 }
