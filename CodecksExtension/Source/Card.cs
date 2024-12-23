@@ -51,11 +51,15 @@ public record Card
 	[JsonProperty("assignee")]
 	public readonly string Assignee;
 
+
+	[JsonProperty("deck")]
+	public readonly string Deck;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Card"/> record.
 	/// </summary>
 	[JsonConstructor]
-	public Card(string cardId, int accountSeq, string title, string content, string status, string assignee)
+	public Card(string cardId, int accountSeq, string title, string content, string status, string assignee, string deck)
 	{
 		CardId = cardId;
 		AccountSeq = accountSeq;
@@ -63,5 +67,6 @@ public record Card
 		Content = content;
 		Status = status;
 		Assignee = assignee;
+		Deck = deck;
 	}
 }

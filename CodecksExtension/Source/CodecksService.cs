@@ -84,7 +84,7 @@ public sealed class CodecksService : IDisposable
 		}
 	}
 
-	public IEnumerable<(string, string, string)> GetDecks()
+	public IEnumerable<(string id, string title, string project)> GetDecks()
 	{
 		string query = GetQuery("GetDecks.json");
 		dynamic data = SendAuthenticatedJsonRequest(query);
@@ -105,12 +105,16 @@ public sealed class CodecksService : IDisposable
 		string query = GetQuery("GetDeck.json");
 		query = query.Replace("<DECK_TITLE>", title);
 		dynamic data = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty property in data.deck)
+		if (data.deck != null)
 		{
-			string id = (string)property.Value["id"];
-			string project = (string)property.Value["project"];
-			return (id, project);
+			foreach (JProperty property in data.deck)
+			{
+				string id = (string)property.Value["id"];
+				string project = (string)property.Value["project"];
+				return (id, project);
+			}
 		}
+
 		return default;
 	}
 	
@@ -128,12 +132,15 @@ public sealed class CodecksService : IDisposable
 
 	public string GetProjectId(string name)
 	{
-		string query = GetQuery("GetProjects.json");
+		string query = GetQuery("GetProject.json");
 		query = query.Replace("<PROJECT>", name);
 		dynamic data = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty property in data.project)
+		if (data.project != null)
 		{
-			return (string)property.Value["id"];
+			foreach (JProperty property in data.project)
+			{
+				return (string)property.Value["id"];
+			}
 		}
 
 		return null;

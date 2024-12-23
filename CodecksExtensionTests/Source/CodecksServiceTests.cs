@@ -150,4 +150,12 @@ public class CodecksServiceTests
 		string id = service.GetProjectId("CodecksPlasticIntegration");
 		id.Should().NotBeNullOrEmpty();
 	}
+	
+	[Test]
+	public void GetProjectNull()
+	{
+		service.Login();
+		string id = service.GetProjectId("asdf");
+		id.Should().BeNull();
+	}
 }
