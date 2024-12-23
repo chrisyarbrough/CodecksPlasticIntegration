@@ -102,40 +102,49 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public List<PlasticTask> GetPendingTasks()
 	{
-		string deckTitle = configValues.DeckFilter.GetValue();
-		string deckId = null;
-		if (!string.IsNullOrEmpty(deckTitle))
-			deckId = service.GetDeck(deckTitle).id;
-
-		IEnumerable<Card> cards = service.GetPendingCards(deckId: deckId).ToArray();
-		cards = FilterCardsByProject(cards);
-		return Convert(cards);
+		string deckId = GetDeckFilter();
+		return GetFilteredTasks(userId: null, deckId);
 	}
 
 	/// <summary>
 	/// Called when creating a new branch from a task.
 	/// Returns tasks filtered by the email of the assigned user.
 	/// </summary>
-	public List<PlasticTask> GetPendingTasks(string assigneeEmail)
+	public List<PlasticTask> GetPendingTasks(string _)
 	{
 		// The passed assigneeEmail here is the one used to sign in to Unity/PlasticSCM.
 		// If the mail used in Codecks is different, the lookup/filtering fails.
 		// Therefore, we use the email from the configuration instead.
 		string accountId = service.GetAccountId();
 		string userId = service.FindUserIdByMail(accountId, configValues.Email.GetValue());
+		string deckId = GetDeckFilter();
+		return GetFilteredTasks(userId, deckId);
+	}
 
-		string deckTitle = configValues.DeckFilter.GetValue();
-		string deckId = null;
-		if (!string.IsNullOrEmpty(deckTitle))
-			deckId = service.GetDeck(deckTitle).id;
+	private List<PlasticTask> GetFilteredTasks(string userId, string deckId)
+	{
+		if (configValues.AdvancedFiltersEnabled == false)
+			deckId = null;
 
-		IEnumerable<Card> cards = service.GetPendingCards(userId: userId, deckId: deckId);
+		IEnumerable<Card> cards = service.GetPendingCards(userId, deckId);
 		cards = FilterCardsByProject(cards);
 		return Convert(cards);
 	}
 
+	private string GetDeckFilter()
+	{
+		string deckTitle = configValues.DeckFilter.GetValue();
+		string deckId = null;
+		if (!string.IsNullOrEmpty(deckTitle))
+			deckId = service.GetDeck(deckTitle).id;
+		return deckId;
+	}
+
 	private IEnumerable<Card> FilterCardsByProject(IEnumerable<Card> cards)
 	{
+		if (configValues.AdvancedFiltersEnabled == false)
+			return cards;
+
 		string projectName = configValues.ProjectFilter.GetValue();
 		if (!string.IsNullOrEmpty(projectName))
 		{

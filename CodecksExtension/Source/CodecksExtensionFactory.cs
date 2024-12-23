@@ -1,6 +1,7 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
 using Codice.Client.IssueTracker;
+using Newtonsoft.Json.Linq;
 
 /// <summary>
 /// Defines the available configuration parameters and
@@ -26,7 +27,12 @@ public class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 	public IPlasticIssueTrackerExtension GetIssueTrackerExtension(
 		IssueTrackerConfiguration configuration)
 	{
-		var configValues = new ConfigValues(configuration);
+		string appSettingsJson = Resources.ReadAllText("AppSettings.json");
+		bool advancedFiltersEnabled = (JObject.Parse(appSettingsJson)
+				.GetValue("AdvancedFilters") ?? false)
+			.Value<bool>();
+		
+		var configValues = new ConfigValues(configuration, advancedFiltersEnabled);
 
 		IPlasticIssueTrackerExtension extension =
 			new ExtensionErrorHandler(

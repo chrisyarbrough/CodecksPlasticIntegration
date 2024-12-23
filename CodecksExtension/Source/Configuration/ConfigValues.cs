@@ -19,12 +19,14 @@ sealed class ConfigValues
 	public readonly ConfigValue<string> Email;
 	public readonly ConfigValue<string> Password;
 	public readonly ConfigValue<string> AccountName;
-	public readonly ConfigValue<string> DeckFilter;
+
+	public readonly bool AdvancedFiltersEnabled;
 	public readonly ConfigValue<string> ProjectFilter;
+	public readonly ConfigValue<string> DeckFilter;
 
 	private readonly IssueTrackerConfiguration configuration;
 
-	public ConfigValues(IssueTrackerConfiguration configuration)
+	public ConfigValues(IssueTrackerConfiguration configuration, bool advancedFiltersEnabled = false)
 	{
 		this.configuration = configuration;
 
@@ -32,8 +34,9 @@ sealed class ConfigValues
 		Email = new StringConfigValue("E-Mail", configuration);
 		Password = new StringConfigValue("Password", configuration);
 		AccountName = new StringConfigValue("Account Name", configuration);
-		DeckFilter = new StringConfigValue("Deck Filter", configuration);
 		ProjectFilter = new StringConfigValue("Project Filter", configuration);
+		DeckFilter = new StringConfigValue("Deck Filter", configuration);
+		AdvancedFiltersEnabled = advancedFiltersEnabled;
 	}
 
 	/// <summary>
@@ -75,6 +78,7 @@ sealed class ConfigValues
 
 			parameters.Add(parameter);
 		}
+
 		return parameters;
 	}
 
@@ -87,6 +91,7 @@ sealed class ConfigValues
 			storedValue = configValue;
 			return true;
 		}
+
 		storedValue = string.Empty;
 		return false;
 	}
@@ -125,16 +130,19 @@ sealed class ConfigValues
 			Type = IssueTrackerConfigurationParameterType.Password,
 		};
 
+		if (AdvancedFiltersEnabled == false)
+			yield break;
+
 		yield return new IssueTrackerConfigurationParameter
 		{
-			Name = DeckFilter.Key,
+			Name = ProjectFilter.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.Text,
 		};
 
 		yield return new IssueTrackerConfigurationParameter
 		{
-			Name = ProjectFilter.Key,
+			Name = DeckFilter.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.Text,
 		};
