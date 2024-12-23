@@ -5,5 +5,7 @@
 obj/
 bin/
 
+User.Build.props
+
 *.DS_Store
 *.user

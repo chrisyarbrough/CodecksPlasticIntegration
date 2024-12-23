@@ -112,6 +112,24 @@ with the following info:
 | Codecks:Password | Password associated with the Codecks email.                         |
 | Codecks:Account  | Account name of your Codecks organization (not your personal name). |
 
+### Change Output Directory
+
+If your PlasticSCM client is installed in a different location,
+create the file `User.Build.props` next to the CodecksExtension.csproj file.
+Then add this content with your custom path:
+
+```xml
+
+<Project>
+	<PropertyGroup>
+		<MacOutputPath>/Applications/PlasticSCM.app/Contents/extensions/codecks/</MacOutputPath>
+		<WindowsOutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks\</WindowsOutputPath>
+	</PropertyGroup>
+</Project>
+```
+
+This file is ignored by git.
+
 ## Additional Resources
 
 The process for developing and configuring PlasticSCM extensions is documented
