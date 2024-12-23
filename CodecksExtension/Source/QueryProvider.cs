@@ -1,6 +1,5 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
-using System.IO;
 using System.Text;
 
 /// <summary>
@@ -29,28 +28,22 @@ class QueryProvider
 
 	public string GetFilter(string fileName)
 	{
-		string filter = File.ReadAllText(
-			Path.GetDirectoryName(typeof(QueryProvider).Assembly.Location) +
-			$"/Queries/Filters/{fileName}");
+		string filter = Resources.ReadAllText($"/Queries/Filters/{fileName}");
 		filter = filter.Replace("'", "\\\"");
 		return Minimize(filter);
 	}
 
 	private string LoadQuery(string fileName)
 	{
-		string directory = Path.GetDirectoryName(typeof(QueryProvider).Assembly.Location);
-		string content = File.ReadAllText(directory + "/Queries/" + fileName);
+		string content = Resources.ReadAllText($"/Queries/{fileName}");
 		return Minimize(content);
 	}
 
 	public string Minimize(string json)
 	{
 		stringBuilder.Clear();
-		foreach (char c in json)
+		foreach (char c in json.Where(c => !char.IsSeparator(c) && !char.IsControl(c)))
 		{
-			if (char.IsSeparator(c) || char.IsControl(c))
-				continue;
-
 			stringBuilder.Append(c);
 		}
 		return stringBuilder.ToString();
