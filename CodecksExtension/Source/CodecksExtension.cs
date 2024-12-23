@@ -187,15 +187,9 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	private Dictionary<string, string> PopulateEmailUserLookup()
 	{
-		var idToMail = new Dictionary<string, string>();
-
 		string accountId = service.GetAccountId();
 		IEnumerable<User> users = service.GetAllUsers(accountId);
-
-		foreach (User user in users)
-			idToMail.Add(user.id, user.email);
-
-		return idToMail;
+		return users.ToDictionary(user => user.id, user => user.email);
 	}
 
 	/// <summary>
