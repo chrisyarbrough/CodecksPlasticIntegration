@@ -5,12 +5,19 @@
 		<AssemblyVersion>1.5</AssemblyVersion>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<MacOutputPath>/Applications/PlasticSCM.app/Contents/extensions/codecks/</MacOutputPath>
+		<WindowsOutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks\</WindowsOutputPath>
+	</PropertyGroup>
+
+	<Import Project="User.Build.props" Condition="Exists('User.Build.props')"/>
+
 	<PropertyGroup Condition="'$(OS)' == 'Unix'">
-		<OutputPath>/Applications/PlasticSCM.app/Contents/extensions/codecks/</OutputPath>
+		<OutputPath>$(MacOutputPath)</OutputPath>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-		<OutputPath>C:\Program Files\PlasticSCM5\client\extensions\codecks\</OutputPath>
+		<OutputPath>$(WindowsOutputPath)</OutputPath>
 	</PropertyGroup>
 
 	<ItemGroup>
