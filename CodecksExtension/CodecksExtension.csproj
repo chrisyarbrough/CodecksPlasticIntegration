@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<Description>Adds support for the Codecks issue tracker to PlasticSCM.</Description>
+		<Description>Adds support for the Codecks issue tracker to PlasticSCM/Unity DevOps Version Control.</Description>
 		<AssemblyVersion>1.5</AssemblyVersion>
 	</PropertyGroup>
 
@@ -16,11 +16,11 @@
 	<ItemGroup>
 		<Reference Include="issuetrackerinterface">
 			<HintPath>..\Libraries\issuetrackerinterface.dll</HintPath>
-			<Private>False</Private>
+			<Private>False</Private> <!-- Don't copy to output -->
 		</Reference>
 		<Reference Include="log4net">
 			<HintPath>..\Libraries\log4net.dll</HintPath>
-			<Private>False</Private>
+			<Private>False</Private> <!-- Don't copy to output -->
 		</Reference>
 		<Reference Include="utils">
 			<HintPath>..\Libraries\utils.dll</HintPath>
@@ -28,12 +28,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Queries\*.*">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
-	  <None Update="Queries\Filters\*">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+		<None Update="Queries\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="AppSettings.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

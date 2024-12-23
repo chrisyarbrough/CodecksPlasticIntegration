@@ -85,6 +85,9 @@ sudo mkdir -p $EXT_DIR
 sudo chown -R username $EXT_DIR
 ```
 
+On macOS, you might also need to go to Settings -> Privacy & Security -> App Management -> Allow your IDE to update
+other applications
+
 On Windows, right-click the folder, select _properties_ and allow 'write' permissions for your user.
 
 ## Testing
