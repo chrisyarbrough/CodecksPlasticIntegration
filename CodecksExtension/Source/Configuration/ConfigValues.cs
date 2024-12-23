@@ -20,6 +20,7 @@ sealed class ConfigValues
 	public readonly ConfigValue<string> Password;
 	public readonly ConfigValue<string> AccountName;
 	public readonly ConfigValue<string> DeckFilter;
+	public readonly ConfigValue<string> ProjectFilter;
 
 	private readonly IssueTrackerConfiguration configuration;
 
@@ -32,6 +33,7 @@ sealed class ConfigValues
 		Password = new StringConfigValue("Password", configuration);
 		AccountName = new StringConfigValue("Account Name", configuration);
 		DeckFilter = new StringConfigValue("Deck Filter", configuration);
+		ProjectFilter = new StringConfigValue("Project Filter", configuration);
 	}
 
 	/// <summary>
@@ -126,6 +128,13 @@ sealed class ConfigValues
 		yield return new IssueTrackerConfigurationParameter
 		{
 			Name = DeckFilter.Key,
+			Value = string.Empty,
+			Type = IssueTrackerConfigurationParameterType.Text,
+		};
+
+		yield return new IssueTrackerConfigurationParameter
+		{
+			Name = ProjectFilter.Key,
 			Value = string.Empty,
 			Type = IssueTrackerConfigurationParameterType.Text,
 		};

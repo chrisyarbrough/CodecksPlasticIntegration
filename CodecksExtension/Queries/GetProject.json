@@ -4,7 +4,7 @@
       {
         "account": [
           {
-            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+            "projects({\"name\":{\"op\":\"eq\",\"value\":\"<PROJECT>\"}})": [
               "id",
               "name"
             ]

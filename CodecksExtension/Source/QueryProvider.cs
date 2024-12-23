@@ -14,8 +14,8 @@ using System.Text;
 /// </summary>
 class QueryProvider
 {
-	private readonly StringBuilder stringBuilder = new StringBuilder();
-	private readonly Dictionary<string, string> cache = new Dictionary<string, string>();
+	private readonly StringBuilder stringBuilder = new();
+	private readonly Dictionary<string, string> cache = new();
 
 	public string GetQuery(string fileName)
 	{
@@ -29,7 +29,9 @@ class QueryProvider
 
 	public string GetFilter(string fileName)
 	{
-		string filter = File.ReadAllText($"Queries/Filters/{fileName}");
+		string filter = File.ReadAllText(
+			Path.GetDirectoryName(typeof(QueryProvider).Assembly.Location) +
+			$"/Queries/Filters/{fileName}");
 		filter = filter.Replace("'", "\\\"");
 		return Minimize(filter);
 	}

@@ -106,7 +106,9 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		string deckId = null;
 		if (!string.IsNullOrEmpty(deckTitle))
 			deckId = service.GetDeck(deckTitle).id;
-		IEnumerable<Card> cards = service.GetPendingCards(deckId: deckId);
+
+		IEnumerable<Card> cards = service.GetPendingCards(deckId: deckId).ToArray();
+		cards = FilterCardsByProject(cards);
 		return Convert(cards);
 	}
 
@@ -128,7 +130,21 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 			deckId = service.GetDeck(deckTitle).id;
 
 		IEnumerable<Card> cards = service.GetPendingCards(userId: userId, deckId: deckId);
+		cards = FilterCardsByProject(cards);
 		return Convert(cards);
+	}
+
+	private IEnumerable<Card> FilterCardsByProject(IEnumerable<Card> cards)
+	{
+		string projectName = configValues.ProjectFilter.GetValue();
+		if (!string.IsNullOrEmpty(projectName))
+		{
+			string projectId = service.GetProjectId(projectName);
+			var decks = service.GetDecks().Where(x => x.project == projectId);
+			cards = cards.Where(c => decks.Any(x => x.id == c.Deck));
+		}
+
+		return cards;
 	}
 
 	private List<PlasticTask> Convert(IEnumerable<Card> cards)
