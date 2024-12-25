@@ -134,11 +134,11 @@ public class CodecksServiceTests
 		deck.id.Should().NotBeEmpty();
 		deck.project.Should().NotBeEmpty();
 	}
-	
+
 	[Test]
 	public void GetProjects()
 	{
-		service.Login(); 
+		service.Login();
 		(string id, string name)[] projects = service.GetProjects().ToArray();
 		projects.Should().NotBeEmpty();
 	}
@@ -150,12 +150,233 @@ public class CodecksServiceTests
 		string id = service.GetProjectId("CodecksPlasticIntegration");
 		id.Should().NotBeNullOrEmpty();
 	}
-	
+
 	[Test]
 	public void GetProjectNull()
 	{
 		service.Login();
 		string id = service.GetProjectId("asdf");
 		id.Should().BeNull();
+	}
+
+	[Test]
+	public void OnlyProject()
+	{
+		service.Login();
+		string response = service.RunQuery(
+			"""
+			{
+			  "query": {
+			    "_root": [
+			      {
+			        "account": [
+			          {
+			            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+			              "id",
+			              "name"
+			            ]
+			          }
+			        ]
+			      }
+			    ]
+			  }
+			}
+			""");
+		TestContext.WriteLine(response);
+		response.Should().NotBeNullOrEmpty();
+	}
+
+	[Test]
+	public void ProjectAndDeck()
+	{
+		service.Login();
+		string response = service.RunQuery(
+			"""
+			{
+			  "query": {
+			    "_root": [
+			      {
+			        "account": [
+			          {
+			            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+			              {
+			                "decks({\"title\":{\"op\":\"eq\",\"value\":\"Art\"}})": [
+			                  "id",
+			                  "title"
+			                ]
+			              }
+			            ]
+			          }
+			        ]
+			      }
+			    ]
+			  }
+			}
+			""");
+		TestContext.WriteLine(response);
+		response.Should().NotBeNullOrEmpty();
+	}
+
+	[Test]
+	public void ProjectDeckAndCards()
+	{
+		service.Login();
+		string response = service.RunQuery(
+			"""
+			{
+			  "query": {
+			    "_root": [
+			      {
+			        "account": [
+			          {
+			            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+			              {
+			                "decks({\"title\":{\"op\":\"eq\",\"value\":\"Art\"}})": [
+			                  {
+			                    "cards": [
+			                      "accountSeq",
+			                      "cardId",
+			                      "title",
+			                      "status",
+			                      "assignee",
+			                      "content"
+			                    ]
+			                  }
+			                ]
+			              }
+			            ]
+			          }
+			        ]
+			      }
+			    ]
+			  }
+			}
+			""");
+		TestContext.WriteLine(response);
+		response.Should().NotBeNullOrEmpty();
+	}
+
+	[Test]
+	public void ProjectDeckCardsAndStatus()
+	{
+		service.Login();
+		string response = service.RunQuery(
+			"""
+			{
+			  "query": {
+			    "_root": [
+			      {
+			        "account": [
+			          {
+			            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+			              {
+			                "decks({\"title\":{\"op\":\"eq\",\"value\":\"Art\"}})": [
+			                  {
+			                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}}]})": [
+			                      "accountSeq",
+			                      "cardId",
+			                      "title",
+			                      "status",
+			                      "assignee",
+			                      "content"
+			                    ]
+			                  }
+			                ]
+			              }
+			            ]
+			          }
+			        ]
+			      }
+			    ]
+			  }
+			}
+			""");
+		TestContext.WriteLine(response);
+		response.Should().NotBeNullOrEmpty();
+	}
+
+	[Test]
+	public void FullQuery()
+	{
+		service.Login();
+		string response = service.RunQuery(
+			"""
+			{
+			  "query": {
+			    "_root": [
+			      {
+			        "account": [
+			          {
+			            "projects({\"name\":{\"op\":\"eq\",\"value\":\"CodecksPlasticIntegration\"}})": [
+			              {
+			                "decks({\"title\":{\"op\":\"eq\",\"value\":\"Bugs\"}})": [
+			                  {
+			                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}},{\"assignee\":{\"primaryEmail\":{\"email\":{\"op\":\"eq\",\"value\":\"***REMOVED***\"}}}}]})": [
+			                      "accountSeq",
+			                      "cardId",
+			                      "title",
+			                      "status",
+			                      "assignee",
+			                      "content"
+			                    ]
+			                  }
+			                ]
+			              }
+			            ]
+			          }
+			        ]
+			      }
+			    ]
+			  }
+			}
+			""");
+		TestContext.WriteLine(response);
+		response.Should().NotBeNullOrEmpty();
+	}
+
+	[Test]
+	[TestCase("CodecksPlasticIntegration", "Bugs", "my@mail.com")]
+	// [TestCase("")]
+	public void FullQueryWithVariables(string project, string deck, string assigneeEmail)
+	{
+		service.Login();
+		string response = service.RunQuery(
+			"""
+				{
+				  "query": {
+				    "_root": [
+				      {
+				        "account": [
+				          {
+				            "projects({\"name\":\"<Project>\"})": [
+				              {
+				                "decks({\"title\":\"<Deck>\"})": [
+				                  {
+				                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}},{\"assignee\":{\"primaryEmail\":{\"email\":\"<AssigneeEmail>\"}}}]})": [
+				                      "accountSeq",
+				                      "cardId",
+				                      "title",
+				                      "status",
+				                      "assignee",
+				                      "content"
+				                    ]
+				                  }
+				                ]
+				              }
+				            ]
+				          }
+				        ]
+				      }
+				    ]
+				  }
+				}
+				"""
+				.Replace("<Project>", project)
+				.Replace("<Deck>", deck)
+				.Replace("<AssigneeEmail>", assigneeEmail)
+		);
+
+		TestContext.WriteLine(response);
+		response.Should().NotBeNullOrEmpty();
 	}
 }
