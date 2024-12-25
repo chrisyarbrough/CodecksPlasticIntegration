@@ -2,7 +2,6 @@ namespace Xarbrough.CodecksPlasticIntegration;
 
 using Newtonsoft.Json.Linq;
 using System.Linq;
-using System.Net;
 using System.Text;
 
 /// <summary>
@@ -30,23 +29,10 @@ public sealed class CodecksService : IDisposable
 		credentials.Login(client, baseUrl);
 	}
 
-	public IEnumerable<Card> GetPendingCards(string userId = null, string deckId = null)
+	public IEnumerable<Card> GetPendingCards(Query query)
 	{
-		Dictionary<(bool hasUserId, bool hasDeckId), string> filterLookup = new()
-		{
-			{ (true, true), "PendingCardsWithAssigneeAndDeck" },
-			{ (true, false), "PendingCardsWithAssignee" },
-			{ (false, true), "PendingCardsWithDeck" },
-			{ (false, false), "PendingCards" }
-		};
-
-		string filter = QueryProvider.GetFilter(filterLookup[(userId != null, deckId != null)]);
-		string query = GetQuery("GetPendingCardsBase.json")
-			.Replace("<FILTER", filter)
-			.Replace("<ASSIGNEE>", userId)
-			.Replace("<DECK_ID>", deckId);
-
-		return LoadCardObjects(query);
+		string queryText = query.Build();
+		return LoadCardObjects(queryText);
 	}
 
 	public Card GetCard(int accountSeq)
@@ -81,88 +67,6 @@ public sealed class CodecksService : IDisposable
 				(string)prop.Value["userId"],
 				(string)prop.Value["email"]);
 		}
-	}
-
-	public IEnumerable<(string id, string title, string project)> GetDecks()
-	{
-		string query = GetQuery("GetDecks.json");
-		dynamic data = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty property in data.deck)
-		{
-			string id = (string)property.Value["id"];
-			string title = (string)property.Value["title"];
-			string project = (string)property.Value["project"];
-			yield return (id, title, project);
-		}
-	}
-
-	public (string id, string project) GetDeck(string title)
-	{
-		if (string.IsNullOrWhiteSpace(title))
-			throw new ArgumentException(null, nameof(title));
-
-		string query = GetQuery("GetDeck.json");
-		query = query.Replace("<DECK_TITLE>", title);
-		dynamic data = SendAuthenticatedJsonRequest(query);
-		if (data.deck != null)
-		{
-			foreach (JProperty property in data.deck)
-			{
-				string id = (string)property.Value["id"];
-				string project = (string)property.Value["project"];
-				return (id, project);
-			}
-		}
-
-		return default;
-	}
-
-	public IEnumerable<(string id, string name)> GetProjects()
-	{
-		string query = GetQuery("GetProjects.json");
-		dynamic data = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty property in data.project)
-		{
-			string id = (string)property.Value["id"];
-			string name = (string)property.Value["name"];
-			yield return (id, name);
-		}
-	}
-
-	public string GetProjectId(string name)
-	{
-		string query = GetQuery("GetProject.json");
-		query = query.Replace("<PROJECT>", name);
-		dynamic data = SendAuthenticatedJsonRequest(query);
-		if (data.project != null)
-		{
-			foreach (JProperty property in data.project)
-			{
-				return (string)property.Value["id"];
-			}
-		}
-
-		return null;
-	}
-
-	public string FindUserIdByMail(string accountId, string email)
-	{
-		// This could be improved by using a more powerful query
-		// which directly finds the user by email on the server.
-		string query = GetQuery("GetAllUsers.json");
-		query = query.Replace("<ACCOUNT>", accountId);
-
-		dynamic data = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty property in data.userEmail)
-		{
-			string mail = (string)property.Value["email"];
-			if (mail == email)
-			{
-				return (string)property.Value["userId"];
-			}
-		}
-
-		throw new WebException($"Failed to find user by mail: {email}");
 	}
 
 	public string GetUserEmail(string userId)
@@ -224,13 +128,7 @@ public sealed class CodecksService : IDisposable
 		return JObject.Parse(response);
 	}
 
-	internal string RunQuery(string query)
-	{
-		return UploadString(baseUrl, query);
-	}
-
 	private static string GetQuery(string fileName) => QueryProvider.GetQuery(fileName);
-
 
 	public static string GetCardBrowserUrl(string account, string idLabel)
 	{

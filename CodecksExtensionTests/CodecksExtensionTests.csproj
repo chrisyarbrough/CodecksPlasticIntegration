@@ -21,6 +21,12 @@
 		<Using Include="NUnit.Framework" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Reference Include="issuetrackerinterface">
+	    <HintPath>..\Libraries\issuetrackerinterface.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
+
 	<Target Name="CopyLibs" AfterTargets="Build">
 		<Copy SourceFiles="..\Libraries\log4net.dll" DestinationFolder="$(OutputPath)" />
 	</Target>

@@ -52,9 +52,9 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	private static CodecksService BuildService(Configuration config)
 	{
 		var credentials = new CodecksCredentials(
-			config.AccountName.GetValue(),
-			config.Email.GetValue(),
-			CryptoServices.GetDecryptedPassword(config.Password.GetValue()));
+			config.AccountName(),
+			config.Email(),
+			CryptoServices.GetDecryptedPassword(config.Password()));
 
 		return new CodecksService(credentials);
 	}
@@ -102,8 +102,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public List<PlasticTask> GetPendingTasks()
 	{
-		string deckId = GetDeckFilter();
-		return GetFilteredTasks(userId: null, deckId);
+		return GetFilteredTasks(assigneeEmail: null);
 	}
 
 	/// <summary>
@@ -115,57 +114,26 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// The passed assigneeEmail here is the one used to sign in to Unity/PlasticSCM.
 		// If the mail used in Codecks is different, the lookup/filtering fails.
 		// Therefore, we use the email from the configuration instead.
-		string accountId = service.GetAccountId();
-		string userId = service.FindUserIdByMail(accountId, config.Email.GetValue());
-		string deckId = GetDeckFilter();
-		return GetFilteredTasks(userId, deckId);
+		return GetFilteredTasks(config.Email());
 	}
 
-	private List<PlasticTask> GetFilteredTasks(string userId, string deckId)
+	private List<PlasticTask> GetFilteredTasks(string assigneeEmail)
 	{
-		if (config.AdvancedFiltersEnabled == false)
-			deckId = null;
-
-		IEnumerable<Card> cards = service.GetPendingCards(userId, deckId);
-		cards = FilterCardsByProject(cards);
-		return Convert(cards);
-	}
-
-	private string GetDeckFilter()
-	{
-		string deckTitle = config.DeckFilter.GetValue();
-		string deckId = null;
-		if (!string.IsNullOrEmpty(deckTitle))
-			deckId = service.GetDeck(deckTitle).id;
-		return deckId;
-	}
-
-	private IEnumerable<Card> FilterCardsByProject(IEnumerable<Card> cards)
-	{
-		if (config.AdvancedFiltersEnabled == false)
-			return cards;
-
-		string projectName = config.ProjectFilter.GetValue();
-		if (!string.IsNullOrEmpty(projectName))
+		Query query = new Query
 		{
-			string projectId = service.GetProjectId(projectName);
-			var decks = service.GetDecks().Where(x => x.project == projectId);
-			cards = cards.Where(c => decks.Any(x => x.id == c.Deck));
-		}
-
-		return cards;
+			ProjectName = config.ProjectFilter(),
+			DeckTitle = config.DeckFilter(),
+			AssigneeEmail = assigneeEmail
+		};
+		IEnumerable<Card> cards = service.GetPendingCards(query);
+		return Convert(cards);
 	}
 
 	private List<PlasticTask> Convert(IEnumerable<Card> cards)
 	{
-		var tasks = new List<PlasticTask>();
-
 		var lookup = PopulateEmailUserLookup();
 		string IdToEmail(string id) => lookup[id];
-
-		foreach (Card card in cards)
-			tasks.Add(Convert(card, IdToEmail));
-		return tasks;
+		return cards.Select(card => Convert(card, IdToEmail)).ToList();
 	}
 
 	private PlasticTask Convert(Card card, Func<string, string> userIdToEmailConverter)
@@ -199,7 +167,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	public PlasticTask GetTaskForBranch(string fullBranchName)
 	{
 		// Full branch name example: "/main/cd-1rj"
-		string branchPrefix = config.BranchPrefix.GetValue();
+		string branchPrefix = config.BranchPrefix();
 
 		if (BranchName.TryExtractTaskFromFullName(
 			    fullBranchName, branchPrefix, out string taskId))
@@ -249,7 +217,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	public void OpenTaskExternally(string taskId)
 	{
 		string browserUrl = CodecksService.GetCardBrowserUrl(
-			config.AccountName.GetValue(),
+			config.AccountName(),
 			taskId);
 
 		Process.Start(new ProcessStartInfo

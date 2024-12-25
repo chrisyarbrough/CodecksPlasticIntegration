@@ -2,48 +2,64 @@ namespace Xarbrough.CodecksPlasticIntegration;
 
 using Codice.Client.IssueTracker;
 using System.Collections.Generic;
+using System.Reflection;
 using Newtonsoft.Json.Linq;
+using ParamType = Codice.Client.IssueTracker.IssueTrackerConfigurationParameterType;
 
 /// <summary>
 /// Defines the available configuration parameters.
 /// </summary>
 /// <remarks>
-/// This class is a facade for the <see cref="IssueTrackerConfiguration"/>
-/// provided by Plastic. For one part, it initializes the config
-/// parameters that are presented to the user, but as a second benefit,
-/// it also wraps some functionality and makes it easier to use for the
-/// main extension class than using the IssueTrackerConfiguration directly.
+/// This class is a facade for the <see cref="IssueTrackerConfiguration"/> provided by Plastic.
+/// For filters, an empty string disables the filter.
 /// </remarks>
 sealed class Configuration
 {
-	public readonly ConfigValue<string> BranchPrefix;
-	public readonly ConfigValue<string> Email;
-	public readonly ConfigValue<string> Password;
-	public readonly ConfigValue<string> AccountName;
+#pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
 
-	public readonly bool AdvancedFiltersEnabled;
-	public readonly ConfigValue<string> ProjectFilter;
-	public readonly ConfigValue<string> DeckFilter;
+	[ParamInfo("Branch Prefix", ParamType.BranchPrefix)]
+	public readonly Func<string> BranchPrefix;
 
-	private readonly IssueTrackerConfiguration configuration;
+	[ParamInfo("E-Mail", ParamType.User)]
+	public readonly Func<string> Email;
 
-	public Configuration(IssueTrackerConfiguration configuration)
+	[ParamInfo("Password", ParamType.Password)]
+	public readonly Func<string> Password;
+
+	[ParamInfo("Account Name", ParamType.Text)]
+	public readonly Func<string> AccountName;
+
+	[ParamInfo("Project Filter", ParamType.Text, isAdvanced: true)]
+	public readonly Func<string> ProjectFilter;
+
+	[ParamInfo("Deck Filter", ParamType.Text, isAdvanced: true)]
+	public readonly Func<string> DeckFilter;
+
+#pragma warning restore CS0649
+
+	private readonly IssueTrackerConfiguration config;
+	private readonly bool enableAdvancedFilters;
+
+	public Configuration(IssueTrackerConfiguration config)
 	{
-		this.configuration = configuration;
-
-		BranchPrefix = new StringConfigValue("Branch Prefix", configuration);
-		Email = new StringConfigValue("E-Mail", configuration);
-		Password = new StringConfigValue("Password", configuration);
-		AccountName = new StringConfigValue("Account Name", configuration);
-		ProjectFilter = new StringConfigValue("Project Filter", configuration);
-		DeckFilter = new StringConfigValue("Deck Filter", configuration);
+		this.config = config;
 
 		string appSettingsJson = Resources.ReadAllText("AppSettings.json");
-		bool advancedFiltersEnabled = (JObject.Parse(appSettingsJson)
-				.GetValue("AdvancedFilters") ?? false)
-			.Value<bool>();
+		enableAdvancedFilters = (JObject.Parse(appSettingsJson).GetValue("AdvancedFilters") ?? false).Value<bool>();
 
-		AdvancedFiltersEnabled = advancedFiltersEnabled;
+		foreach (var field in GetFields())
+		{
+			var info = field.GetCustomAttribute<ParamInfo>()!;
+			field.SetValue(this, info.IsAdvanced ? GetAdvancedValue(info.Name) : () => config.GetValue(info.Name));
+		}
+	}
+
+	private IEnumerable<FieldInfo> GetFields() => GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
+
+	private Func<string> GetAdvancedValue(string key)
+	{
+		// If the advanced filters are disabled, return a value as if the user wanted to not set/use this parameter.
+		return () => enableAdvancedFilters ? config.GetValue(key) : string.Empty;
 	}
 
 	/// <summary>
@@ -57,10 +73,10 @@ sealed class Configuration
 	public IssueTrackerConfiguration BuildPlasticConfiguration()
 	{
 		// Task per branch or per changeset.
-		ExtensionWorkingMode workingMode = GetWorkingMode(configuration);
+		ExtensionWorkingMode workingMode = GetWorkingMode(config);
 
 		// Settings that the user configures in the preferences window for the extension.
-		var parameters = GetConfigurationParameters(configuration);
+		var parameters = GetConfigurationParameters(config);
 
 		return new IssueTrackerConfiguration(workingMode, parameters);
 	}
@@ -73,8 +89,7 @@ sealed class Configuration
 		return config.WorkingMode;
 	}
 
-	private List<IssueTrackerConfigurationParameter> GetConfigurationParameters(
-		IssueTrackerConfiguration config)
+	private List<IssueTrackerConfigurationParameter> GetConfigurationParameters(IssueTrackerConfiguration config)
 	{
 		var parameters = new List<IssueTrackerConfigurationParameter>();
 		foreach (IssueTrackerConfigurationParameter parameter in CreateDefaultParameters())
@@ -89,8 +104,7 @@ sealed class Configuration
 		return parameters;
 	}
 
-	private static bool TryGetValue(
-		IssueTrackerConfiguration config, string name, out string storedValue)
+	private static bool TryGetValue(IssueTrackerConfiguration config, string name, out string storedValue)
 	{
 		string configValue = config?.GetValue(name);
 		if (!string.IsNullOrEmpty(configValue))
@@ -105,53 +119,29 @@ sealed class Configuration
 
 	private IEnumerable<IssueTrackerConfigurationParameter> CreateDefaultParameters()
 	{
-		// Allow users to not use any branch prefix by not supplying a default value.
-		// If the extension defines one here, it would be impossible to detect
-		// whether the user wanted to set it to an empty string or
-		// if this is the first time the config is loaded.
-		yield return new IssueTrackerConfigurationParameter
-		{
-			Name = BranchPrefix.Key,
-			Value = string.Empty,
-			Type = IssueTrackerConfigurationParameterType.BranchPrefix,
-		};
+		return GetFields()
+			.Select(field => field.GetCustomAttribute<ParamInfo>()!)
+			.Where(info => !info.IsAdvanced || enableAdvancedFilters)
+			.Select(info => new IssueTrackerConfigurationParameter
+			{
+				Name = info.Name,
+				Value = string.Empty,
+				Type = info.Type,
+			});
+	}
 
-		yield return new IssueTrackerConfigurationParameter
-		{
-			Name = AccountName.Key,
-			Value = string.Empty,
-			Type = IssueTrackerConfigurationParameterType.Text,
-		};
+	[AttributeUsage(AttributeTargets.Field)]
+	private class ParamInfo : Attribute
+	{
+		public readonly string Name;
+		public readonly ParamType Type;
+		public readonly bool IsAdvanced;
 
-		yield return new IssueTrackerConfigurationParameter
+		public ParamInfo(string name, ParamType type, bool isAdvanced = false)
 		{
-			Name = Email.Key,
-			Value = string.Empty,
-			Type = IssueTrackerConfigurationParameterType.User,
-		};
-
-		yield return new IssueTrackerConfigurationParameter
-		{
-			Name = Password.Key,
-			Value = string.Empty,
-			Type = IssueTrackerConfigurationParameterType.Password,
-		};
-
-		if (AdvancedFiltersEnabled == false)
-			yield break;
-
-		yield return new IssueTrackerConfigurationParameter
-		{
-			Name = ProjectFilter.Key,
-			Value = string.Empty,
-			Type = IssueTrackerConfigurationParameterType.Text,
-		};
-
-		yield return new IssueTrackerConfigurationParameter
-		{
-			Name = DeckFilter.Key,
-			Value = string.Empty,
-			Type = IssueTrackerConfigurationParameterType.Text,
-		};
+			Name = name;
+			Type = type;
+			IsAdvanced = isAdvanced;
+		}
 	}
 }
