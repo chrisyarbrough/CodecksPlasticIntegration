@@ -8,6 +8,6 @@ internal static class Resources
 	public static string ReadAllText(string relativePath)
 	{
 		string directory = Path.GetDirectoryName(typeof(CodecksExtension).Assembly.Location);
-		return File.ReadAllText(directory + relativePath);
+		return File.ReadAllText(directory + "/" + relativePath);
 	}
 }

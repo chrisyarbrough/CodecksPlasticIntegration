@@ -14,7 +14,6 @@ public sealed class CodecksService : IDisposable
 
 	private readonly CodecksCredentials credentials;
 	private readonly HttpClient client;
-	private readonly QueryProvider queryProvider = new();
 
 	public CodecksService(CodecksCredentials credentials)
 	{
@@ -41,7 +40,7 @@ public sealed class CodecksService : IDisposable
 			{ (false, false), "PendingCards" }
 		};
 
-		string filter = queryProvider.GetFilter(filterLookup[(userId != null, deckId != null)]);
+		string filter = QueryProvider.GetFilter(filterLookup[(userId != null, deckId != null)]);
 		string query = GetQuery("GetPendingCardsBase.json")
 			.Replace("<FILTER", filter)
 			.Replace("<ASSIGNEE>", userId)
@@ -117,7 +116,7 @@ public sealed class CodecksService : IDisposable
 
 		return default;
 	}
-	
+
 	public IEnumerable<(string id, string name)> GetProjects()
 	{
 		string query = GetQuery("GetProjects.json");
@@ -162,6 +161,7 @@ public sealed class CodecksService : IDisposable
 				return (string)property.Value["userId"];
 			}
 		}
+
 		throw new WebException($"Failed to find user by mail: {email}");
 	}
 
@@ -224,7 +224,13 @@ public sealed class CodecksService : IDisposable
 		return JObject.Parse(response);
 	}
 
-	private string GetQuery(string fileName) => queryProvider.GetQuery(fileName);
+	internal string RunQuery(string query)
+	{
+		return UploadString(baseUrl, query);
+	}
+
+	private static string GetQuery(string fileName) => QueryProvider.GetQuery(fileName);
+
 
 	public static string GetCardBrowserUrl(string account, string idLabel)
 	{

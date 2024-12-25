@@ -23,7 +23,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// this may contain invalid data. Once the data is correct, a new instance
 	/// of this class will be created and passed a fresh copy of the config.
 	/// </summary>
-	private readonly ConfigValues configValues;
+	private readonly Configuration config;
 
 	/// <summary>
 	/// Converts the card 'accountSeq' value to a three-letter
@@ -36,25 +36,25 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	private CodecksService service;
 
-	internal CodecksExtension(string name, ConfigValues configValues)
+	internal CodecksExtension(string name, Configuration config)
 	{
 		if (string.IsNullOrEmpty(name))
 			throw new ArgumentException(name);
 
-		ArgumentNullException.ThrowIfNull(configValues);
+		ArgumentNullException.ThrowIfNull(config);
 
 		this.name = name;
-		this.configValues = configValues;
+		this.config = config;
 	}
 
 	public string GetExtensionName() => name;
 
-	private static CodecksService BuildService(ConfigValues configValues)
+	private static CodecksService BuildService(Configuration config)
 	{
 		var credentials = new CodecksCredentials(
-			configValues.AccountName.GetValue(),
-			configValues.Email.GetValue(),
-			CryptoServices.GetDecryptedPassword(configValues.Password.GetValue()));
+			config.AccountName.GetValue(),
+			config.Email.GetValue(),
+			CryptoServices.GetDecryptedPassword(config.Password.GetValue()));
 
 		return new CodecksService(credentials);
 	}
@@ -69,7 +69,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public bool TestConnection(IssueTrackerConfiguration configuration)
 	{
-		service = BuildService(new ConfigValues(configuration));
+		service = BuildService(new Configuration(configuration));
 		service.Login();
 
 		// To make sure the connection actually works,
@@ -83,7 +83,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	public void Connect()
 	{
-		service = BuildService(configValues);
+		service = BuildService(config);
 		service.Login();
 	}
 
@@ -116,14 +116,14 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// If the mail used in Codecks is different, the lookup/filtering fails.
 		// Therefore, we use the email from the configuration instead.
 		string accountId = service.GetAccountId();
-		string userId = service.FindUserIdByMail(accountId, configValues.Email.GetValue());
+		string userId = service.FindUserIdByMail(accountId, config.Email.GetValue());
 		string deckId = GetDeckFilter();
 		return GetFilteredTasks(userId, deckId);
 	}
 
 	private List<PlasticTask> GetFilteredTasks(string userId, string deckId)
 	{
-		if (configValues.AdvancedFiltersEnabled == false)
+		if (config.AdvancedFiltersEnabled == false)
 			deckId = null;
 
 		IEnumerable<Card> cards = service.GetPendingCards(userId, deckId);
@@ -133,7 +133,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	private string GetDeckFilter()
 	{
-		string deckTitle = configValues.DeckFilter.GetValue();
+		string deckTitle = config.DeckFilter.GetValue();
 		string deckId = null;
 		if (!string.IsNullOrEmpty(deckTitle))
 			deckId = service.GetDeck(deckTitle).id;
@@ -142,10 +142,10 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	private IEnumerable<Card> FilterCardsByProject(IEnumerable<Card> cards)
 	{
-		if (configValues.AdvancedFiltersEnabled == false)
+		if (config.AdvancedFiltersEnabled == false)
 			return cards;
 
-		string projectName = configValues.ProjectFilter.GetValue();
+		string projectName = config.ProjectFilter.GetValue();
 		if (!string.IsNullOrEmpty(projectName))
 		{
 			string projectId = service.GetProjectId(projectName);
@@ -199,7 +199,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	public PlasticTask GetTaskForBranch(string fullBranchName)
 	{
 		// Full branch name example: "/main/cd-1rj"
-		string branchPrefix = configValues.BranchPrefix.GetValue();
+		string branchPrefix = config.BranchPrefix.GetValue();
 
 		if (BranchName.TryExtractTaskFromFullName(
 			    fullBranchName, branchPrefix, out string taskId))
@@ -249,7 +249,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	public void OpenTaskExternally(string taskId)
 	{
 		string browserUrl = CodecksService.GetCardBrowserUrl(
-			configValues.AccountName.GetValue(),
+			config.AccountName.GetValue(),
 			taskId);
 
 		Process.Start(new ProcessStartInfo

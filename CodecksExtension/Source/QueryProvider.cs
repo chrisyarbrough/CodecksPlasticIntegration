@@ -11,41 +11,42 @@ using System.Text;
 /// in a separate json file which allows taking advantage of IDE tools
 /// such as syntax checking, highlighting and auto-formatting.
 /// </summary>
-class QueryProvider
+static class QueryProvider
 {
-	private readonly StringBuilder stringBuilder = new();
-	private readonly Dictionary<string, string> cache = new();
+	private static readonly StringBuilder stringBuilder = new();
+	private static readonly Dictionary<string, string> cache = new();
 
-	public string GetQuery(string fileName)
+	public static string GetQuery(string fileName)
 	{
-		if (!cache.TryGetValue(fileName, out string query))
+		return ReadOrGetCachedFile($"Queries/{fileName}");
+	}
+
+	public static string GetFilter(string fileName)
+	{
+		return ReadOrGetCachedFile($"Queries/Filters/{fileName}");
+	}
+
+	private static string ReadOrGetCachedFile(string name)
+	{
+		if (!cache.TryGetValue(name, out string content))
 		{
-			query = LoadQuery(fileName);
-			cache.Add(fileName, query);
+			content = Resources.ReadAllText(name);
+			content = content.Replace("'", "\\\"");
+			content = Minimize(content);
+			cache.Add(name, content);
 		}
-		return query;
+
+		return content;
 	}
 
-	public string GetFilter(string fileName)
-	{
-		string filter = Resources.ReadAllText($"/Queries/Filters/{fileName}");
-		filter = filter.Replace("'", "\\\"");
-		return Minimize(filter);
-	}
-
-	private string LoadQuery(string fileName)
-	{
-		string content = Resources.ReadAllText($"/Queries/{fileName}");
-		return Minimize(content);
-	}
-
-	public string Minimize(string json)
+	private static string Minimize(string json)
 	{
 		stringBuilder.Clear();
 		foreach (char c in json.Where(c => !char.IsSeparator(c) && !char.IsControl(c)))
 		{
 			stringBuilder.Append(c);
 		}
+
 		return stringBuilder.ToString();
 	}
 }

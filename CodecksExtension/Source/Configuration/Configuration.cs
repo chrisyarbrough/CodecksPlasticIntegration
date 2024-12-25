@@ -2,6 +2,7 @@ namespace Xarbrough.CodecksPlasticIntegration;
 
 using Codice.Client.IssueTracker;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 
 /// <summary>
 /// Defines the available configuration parameters.
@@ -13,7 +14,7 @@ using System.Collections.Generic;
 /// it also wraps some functionality and makes it easier to use for the
 /// main extension class than using the IssueTrackerConfiguration directly.
 /// </remarks>
-sealed class ConfigValues
+sealed class Configuration
 {
 	public readonly ConfigValue<string> BranchPrefix;
 	public readonly ConfigValue<string> Email;
@@ -26,7 +27,7 @@ sealed class ConfigValues
 
 	private readonly IssueTrackerConfiguration configuration;
 
-	public ConfigValues(IssueTrackerConfiguration configuration, bool advancedFiltersEnabled = false)
+	public Configuration(IssueTrackerConfiguration configuration)
 	{
 		this.configuration = configuration;
 
@@ -36,6 +37,12 @@ sealed class ConfigValues
 		AccountName = new StringConfigValue("Account Name", configuration);
 		ProjectFilter = new StringConfigValue("Project Filter", configuration);
 		DeckFilter = new StringConfigValue("Deck Filter", configuration);
+
+		string appSettingsJson = Resources.ReadAllText("AppSettings.json");
+		bool advancedFiltersEnabled = (JObject.Parse(appSettingsJson)
+				.GetValue("AdvancedFilters") ?? false)
+			.Value<bool>();
+
 		AdvancedFiltersEnabled = advancedFiltersEnabled;
 	}
 
