@@ -1,7 +1,5 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
-using Newtonsoft.Json;
-
 /// <summary>
 /// A data transfer object which represents
 /// the relevant properties of a Codecks card.
@@ -11,8 +9,7 @@ record Card
 	/// <summary>
 	/// A guid, e.g. '2e8ec154-521f-11ec-be97-07520a644149'
 	/// </summary>
-	[JsonProperty("cardId")]
-	public readonly string CardId;
+	public string CardId { get; init; }
 
 	/// <summary>
 	/// A number, e.g. '123'. It seems this number
@@ -21,20 +18,17 @@ record Card
 	/// Strongly related to the card display label
 	/// (no terminology is known) which looks like e.g. '1w4'.
 	/// </summary>
-	[JsonProperty("accountSeq")]
-	public readonly int AccountSeq;
+	public int AccountSeq { get; init; }
 
 	/// <summary>
 	/// Plain text. Could also be called card header or name.
 	/// </summary>
-	[JsonProperty("title")]
-	public readonly string Title;
+	public string Title { get; init; }
 
 	/// <summary>
 	/// Plain text. Could also be called card body or description.
 	/// </summary>
-	[JsonProperty("content")]
-	public readonly string Content;
+	public string Content { get; init; }
 
 	/// <summary>
 	/// Examples:
@@ -42,8 +36,7 @@ record Card
 	/// done
 	/// started
 	/// </summary>
-	[JsonProperty("status")]
-	public readonly string Status;
+	public string Status { get; init; }
 
 	/// <summary>
 	/// The user name of the assignee.
@@ -51,18 +44,5 @@ record Card
 	/// <remarks>
 	/// Can be null if not assigned. Set from a more complex structure after deserializing the card.
 	/// </remarks>
-	public string Assignee;
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="Card"/> record.
-	/// </summary>
-	[JsonConstructor]
-	public Card(string cardId, int accountSeq, string title, string content, string status)
-	{
-		CardId = cardId;
-		AccountSeq = accountSeq;
-		Title = title;
-		Content = content;
-		Status = status;
-	}
+	public string Assignee { get; init; }
 }

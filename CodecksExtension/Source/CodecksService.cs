@@ -61,19 +61,28 @@ sealed class CodecksService : IDisposable
 		if (result.card == null)
 			yield break;
 
-		foreach (JProperty card in result.card)
+		foreach (JProperty cardProperty in result.card)
 		{
-			var cardObject = card.Value.ToObject<Card>();
+			dynamic cardJson = cardProperty.Value;
 
-			if (cardObject.Assignee != null)
+			string userName = string.Empty;
+			if (cardJson.assignee != null)
 			{
-				dynamic user = result.user[cardObject.Assignee];
+				dynamic user = result.user[cardJson.assignee.ToString()];
 				string name = user.name;
 				string fullName = user.fullName;
-				cardObject.Assignee = string.IsNullOrEmpty(fullName) ? name : fullName;
+				userName = string.IsNullOrEmpty(fullName) ? name : fullName;
 			}
 
-			yield return cardObject;
+			yield return new Card
+			{
+				CardId = cardJson.cardId,
+				AccountSeq = cardJson.accountSeq,
+				Title = cardJson.title,
+				Content = cardJson.content,
+				Status = cardJson.status,
+				Assignee = userName
+			};
 		}
 	}
 
