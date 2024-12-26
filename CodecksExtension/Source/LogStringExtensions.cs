@@ -14,13 +14,9 @@ static class LogStringExtensions
 		var sb = new StringBuilder();
 		sb.Append("Working Mode: ").Append(configuration.WorkingMode).AppendLine();
 		sb.Append("Parameters:\n");
-		foreach (IssueTrackerConfigurationParameter parameter in configuration.GetAllParameters())
+		foreach (IssueTrackerConfigurationParameter parameter in configuration.GetAllParameters()
+			         .Where(parameter => parameter.Type != IssueTrackerConfigurationParameterType.Password))
 		{
-			// Plastic stores encrypted passwords, but nevertheless, we don't want
-			// to accidentally log anything that could help compromise it.
-			if (parameter.Type == IssueTrackerConfigurationParameterType.Password)
-				continue;
-
 			AppendPublicFields(sb, parameter);
 			sb.AppendLine();
 		}

@@ -3,6 +3,7 @@ namespace Xarbrough.CodecksPlasticIntegration;
 using Codice.Client.IssueTracker;
 using Codice.Utils;
 using System.Diagnostics;
+using log4net;
 
 /// <summary>
 /// The main interface implementation for the issue tracker extension.
@@ -29,12 +30,14 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// Converts the card 'accountSeq' value to a three-letter
 	/// display label and vice versa.
 	/// </summary>
-	private readonly CardIdConverter idConverter = new CardIdConverter();
+	private readonly CardIdConverter idConverter = new();
 
 	/// <summary>
 	/// A helper class to interface with the Codecks API.
 	/// </summary>
 	private CodecksService service;
+
+	private static ILog log = LogManager.GetLogger("Codecks");
 
 	internal CodecksExtension(string name, Configuration config)
 	{
@@ -125,39 +128,24 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 			DeckTitle = config.DeckFilter(),
 			AssigneeEmail = assigneeEmail
 		};
+		log.Info("Query: " + query.Build());
 		IEnumerable<Card> cards = service.GetPendingCards(query);
 		return Convert(cards);
 	}
 
 	private List<PlasticTask> Convert(IEnumerable<Card> cards)
+		=> cards.Select(Convert).ToList();
+
+	private PlasticTask Convert(Card card)
 	{
-		var lookup = PopulateEmailUserLookup();
-		string IdToEmail(string id) => lookup[id];
-		return cards.Select(card => Convert(card, IdToEmail)).ToList();
-	}
-
-	private PlasticTask Convert(Card card, Func<string, string> userIdToEmailConverter)
-	{
-		string owner = string.Empty;
-
-		if (!string.IsNullOrEmpty(card.Assignee))
-			owner = userIdToEmailConverter.Invoke(card.Assignee);
-
 		return new PlasticTask
 		{
+			Id = idConverter.IntToSeq(card.AccountSeq),
 			Title = card.Title,
 			Description = card.Content,
-			Id = idConverter.IntToSeq(card.AccountSeq),
 			Status = card.Status,
-			Owner = owner
+			Owner = card.Assignee,
 		};
-	}
-
-	private Dictionary<string, string> PopulateEmailUserLookup()
-	{
-		string accountId = service.GetAccountId();
-		IEnumerable<User> users = service.GetAllUsers(accountId);
-		return users.ToDictionary(user => user.id, user => user.email);
 	}
 
 	/// <summary>
@@ -186,20 +174,15 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	public Dictionary<string, PlasticTask> GetTasksForBranches(List<string> fullBranchNames)
 	{
-		var result = new Dictionary<string, PlasticTask>(fullBranchNames.Count);
-
-		foreach (string fullBranchName in fullBranchNames)
-			result.Add(fullBranchName, GetTaskForBranch(fullBranchName));
-
-		return result;
+		return fullBranchNames.Select(branchName => (Branch: branchName, Task: GetTaskForBranch(branchName)))
+			.ToDictionary(t => t.Branch, t => t.Task);
 	}
 
 	private PlasticTask FetchTaskFromId(string taskId)
 	{
 		int accountSeq = idConverter.SeqToInt(taskId);
 		Card card = service.GetCard(accountSeq);
-		string email = service.GetUserEmail(card.Assignee);
-		return Convert(card, _ => email);
+		return Convert(card);
 	}
 
 	public void MarkTaskAsOpen(string taskId, string assignee)
@@ -237,14 +220,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 		Connect();
 
-		var convertedCardIds = new List<string>();
-
-		for (int i = 0; i < taskIds.Count; i++)
-		{
-			string id = idConverter.SeqToInt(taskIds[i]).ToString();
-			convertedCardIds.Add(id);
-		}
-
+		var convertedCardIds = taskIds.Select(t => idConverter.SeqToInt(t).ToString());
 		var cards = service.GetCards(convertedCardIds);
 		return Convert(cards);
 	}

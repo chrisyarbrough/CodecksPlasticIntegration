@@ -21,11 +21,6 @@ static class QueryProvider
 		return ReadOrGetCachedFile($"Queries/{fileName}");
 	}
 
-	public static string GetFilter(string fileName)
-	{
-		return ReadOrGetCachedFile($"Queries/Filters/{fileName}");
-	}
-
 	private static string ReadOrGetCachedFile(string name)
 	{
 		if (!cache.TryGetValue(name, out string content))

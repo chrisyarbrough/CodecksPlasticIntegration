@@ -20,13 +20,18 @@ public sealed class Query
 			              {
 			                "decks<DeckFilter>": [
 			                  {
-			                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}},{\"assignee\":{<AssigneeFilter>}}]})": [
+			                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}}<AssigneeFilter>]})": [
 			                      "accountSeq",
 			                      "cardId",
 			                      "title",
 			                      "status",
-			                      "assignee",
-			                      "content"
+			                      "content",
+			                      {
+			                        "assignee": [
+			                          "name",
+			                          "fullName"
+			                        ]
+			                      }
 			                    ]
 			                  }
 			                ]
@@ -45,7 +50,7 @@ public sealed class Query
 			("ProjectFilter", "Project", ProjectName, $$"""({\"name\":\"{{ProjectName}}\"})"""),
 			("DeckFilter", "Deck", DeckTitle, $$"""({\"title\":\"{{DeckTitle}}\"})"""),
 			("AssigneeFilter", "AssigneeEmail", AssigneeEmail,
-				$$"""\"primaryEmail\":{\"email\":\"{{AssigneeEmail}}\"}"""),
+				$$$$""",{\"assignee\":{\"primaryEmail\":{\"email\":\"{{{{AssigneeEmail}}}}\"}}}"""),
 		};
 
 		foreach (var (filterName, valueName, value, filterValue) in replacements)

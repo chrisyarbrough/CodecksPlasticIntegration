@@ -46,27 +46,23 @@ public record Card
 	public readonly string Status;
 
 	/// <summary>
-	/// The user guid assigned to this card.
+	/// The user name of the assignee.
 	/// </summary>
-	[JsonProperty("assignee")]
-	public readonly string Assignee;
-
-
-	[JsonProperty("deck")]
-	public readonly string Deck;
+	/// <remarks>
+	/// Can be null if not assigned. Set from a more complex structure after deserializing the card.
+	/// </remarks>
+	public string Assignee;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Card"/> record.
 	/// </summary>
 	[JsonConstructor]
-	public Card(string cardId, int accountSeq, string title, string content, string status, string assignee, string deck)
+	public Card(string cardId, int accountSeq, string title, string content, string status)
 	{
 		CardId = cardId;
 		AccountSeq = accountSeq;
 		Title = title;
 		Content = content;
 		Status = status;
-		Assignee = assignee;
-		Deck = deck;
 	}
 }

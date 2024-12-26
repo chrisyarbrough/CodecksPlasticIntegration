@@ -32,7 +32,7 @@ public partial class CodecksCredentials
 		client.DefaultRequestHeaders.Add("X-Account", account);
 	}
 
-	public void Login(HttpClient client, string baseURL)
+	public void Login(HttpClient client, string baseUrl)
 	{
 		string json = JsonConvert.SerializeObject(new
 		{
@@ -42,7 +42,7 @@ public partial class CodecksCredentials
 
 		var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-		HttpResponseMessage response = client.PostAsync(baseURL + "dispatch/users/login", content).Result;
+		HttpResponseMessage response = client.PostAsync(baseUrl + "dispatch/users/login", content).Result;
 		response.EnsureSuccessStatusCode();
 
 		if (TryParseCookieToken(response.Headers, out string parsedToken))
@@ -51,7 +51,7 @@ public partial class CodecksCredentials
 			throw new WebException("Failed to parse response set-cookie header.");
 	}
 
-	private static bool TryParseCookieToken(HttpResponseHeaders headers, out string cookie)
+	private static bool TryParseCookieToken(HttpHeaders headers, out string cookie)
 	{
 		cookie = string.Empty;
 

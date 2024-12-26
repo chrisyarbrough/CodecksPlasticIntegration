@@ -56,31 +56,6 @@ public sealed class CodecksService : IDisposable
 		return result._root.account;
 	}
 
-	public IEnumerable<User> GetAllUsers(string accountId)
-	{
-		string query = GetQuery("GetAllUsers.json");
-		query = query.Replace("<ACCOUNT>", accountId);
-		dynamic result = SendAuthenticatedJsonRequest(query);
-		foreach (JProperty prop in result.userEmail)
-		{
-			yield return new User(
-				(string)prop.Value["userId"],
-				(string)prop.Value["email"]);
-		}
-	}
-
-	public string GetUserEmail(string userId)
-	{
-		if (string.IsNullOrEmpty(userId))
-			return string.Empty;
-
-		string query = GetQuery("GetUserEmail.json");
-		query = query.Replace("<USER>", userId);
-		dynamic result = SendJsonRequest(query);
-		string emailId = result.user[userId].primaryEmail;
-		return result.userEmail[emailId].email;
-	}
-
 	public void SetCardStatusToStarted(string cardGuid)
 	{
 		// The card id is the full-length guid, not to confuse with the accountSeq.
@@ -97,7 +72,19 @@ public sealed class CodecksService : IDisposable
 			yield break;
 
 		foreach (JProperty card in result.card)
-			yield return card.Value.ToObject<Card>();
+		{
+			var cardObject = card.Value.ToObject<Card>();
+
+			if (cardObject.Assignee != null)
+			{
+				dynamic user = result.user[cardObject.Assignee];
+				string name = user.name;
+				string fullName = user.fullName;
+				cardObject.Assignee = string.IsNullOrEmpty(fullName) ? name : fullName;
+			}
+
+			yield return cardObject;
+		}
 	}
 
 	private string UploadString(string url, string payload)

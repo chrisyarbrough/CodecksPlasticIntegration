@@ -64,15 +64,6 @@ public class CodecksServiceTests
 	}
 
 	[Test]
-	public void GetAllUsers()
-	{
-		service.Login();
-		string accountId = service.GetAccountId();
-		var users = service.GetAllUsers(accountId).ToArray();
-		users.Should().NotBeEmpty();
-	}
-
-	[Test]
 	[TestCase("CodecksPlasticIntegration", "Bugs", "***REMOVED***")]
 	[TestCase("CodecksPlasticIntegration", "", "***REMOVED***")]
 	[TestCase("CodecksPlasticIntegration", "", "")]
@@ -88,7 +79,7 @@ public class CodecksServiceTests
 		};
 
 		service.Login();
-		var cards = service.GetPendingCards(query).ToArray();
+		Card[] cards = service.GetPendingCards(query).ToArray();
 		cards.Should().NotBeEmpty();
 	}
 }
