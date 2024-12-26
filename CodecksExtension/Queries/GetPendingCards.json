@@ -1,0 +1,33 @@
+{
+  "query": {
+    "_root": [
+      {
+        "account": [
+          {
+            "projects<ProjectFilter>": [
+              {
+                "decks<DeckFilter>": [
+                  {
+                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}}<AssigneeFilter>]})": [
+                      "accountSeq",
+                      "cardId",
+                      "title",
+                      "status",
+                      "content",
+                      {
+                        "assignee": [
+                          "name",
+                          "fullName"
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,6 +1,17 @@
 namespace Xarbrough.CodecksPlasticIntegration;
 
-public sealed class Query
+using System.Text;
+
+/// <summary>
+/// Queries sent to the Codecks API are GraphQL-like json strings.
+/// They allow a powerful syntax to access resources in a flexible
+/// way, however, working with raw json strings in C# is rather awkward
+/// because of the need for escaping quotes and the lack of layout.
+/// It was deemed a better workflow to develop and maintain each query
+/// in a separate json file which allows taking advantage of IDE tools
+/// such as syntax checking, highlighting and auto-formatting.
+/// </summary>
+sealed class Query
 {
 	public string ProjectName { get; init; }
 	public string DeckTitle { get; init; }
@@ -8,42 +19,7 @@ public sealed class Query
 
 	public string Build()
 	{
-		string query =
-			"""
-			{
-			  "query": {
-			    "_root": [
-			      {
-			        "account": [
-			          {
-			            "projects<ProjectFilter>": [
-			              {
-			                "decks<DeckFilter>": [
-			                  {
-			                    "cards({\"$and\":[{\"visibility\":\"default\"},{\"status\":{\"op\":\"neq\",\"value\":\"done\"}}<AssigneeFilter>]})": [
-			                      "accountSeq",
-			                      "cardId",
-			                      "title",
-			                      "status",
-			                      "content",
-			                      {
-			                        "assignee": [
-			                          "name",
-			                          "fullName"
-			                        ]
-			                      }
-			                    ]
-			                  }
-			                ]
-			              }
-			            ]
-			          }
-			        ]
-			      }
-			    ]
-			  }
-			}
-			""";
+		string query = Load("GetPendingCards.json");
 
 		(string, string, string, string)[] replacements =
 		{
@@ -60,5 +36,32 @@ public sealed class Query
 		}
 
 		return query;
+	}
+
+
+	[ThreadStatic]
+	private static readonly StringBuilder stringBuilder;
+
+	static Query()
+	{
+		stringBuilder = new StringBuilder(capacity: 512);
+	}
+
+	public static string Load(string fileName)
+	{
+		return Minimize(
+			Resources.ReadAllText($"Queries/{fileName}")
+				.Replace("'", "\\\""));
+	}
+
+	private static string Minimize(string json)
+	{
+		stringBuilder.Clear();
+		foreach (char c in json.Where(c => !char.IsSeparator(c) && !char.IsControl(c)))
+		{
+			stringBuilder.Append(c);
+		}
+
+		return stringBuilder.ToString();
 	}
 }

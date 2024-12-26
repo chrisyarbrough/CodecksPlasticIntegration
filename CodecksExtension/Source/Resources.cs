@@ -3,7 +3,7 @@ namespace Xarbrough.CodecksPlasticIntegration;
 /// <summary>
 /// A utility to access configurable files that are published next to the assembly.
 /// </summary>
-internal static class Resources
+static class Resources
 {
 	public static string ReadAllText(string relativePath)
 	{

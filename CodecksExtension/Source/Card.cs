@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 /// A data transfer object which represents
 /// the relevant properties of a Codecks card.
 /// </summary>
-public record Card
+record Card
 {
 	/// <summary>
 	/// A guid, e.g. '2e8ec154-521f-11ec-be97-07520a644149'

@@ -6,7 +6,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Text.RegularExpressions;
 
-public partial class CodecksCredentials
+partial class CodecksCredentials
 {
 	public bool HasToken => !string.IsNullOrEmpty(token);
 

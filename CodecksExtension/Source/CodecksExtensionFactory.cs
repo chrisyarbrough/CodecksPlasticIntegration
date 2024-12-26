@@ -12,7 +12,7 @@ using Codice.Client.IssueTracker;
 /// create an instance of the issue tracker interface implementation.
 /// </remarks>
 // ReSharper disable once UnusedType.Global
-public class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
+class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 {
 	private const string extensionName = "Codecks";
 

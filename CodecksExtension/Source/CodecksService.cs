@@ -7,7 +7,7 @@ using System.Text;
 /// <summary>
 /// Interfaces with the Codecks web API.
 /// </summary>
-public sealed class CodecksService : IDisposable
+sealed class CodecksService : IDisposable
 {
 	private const string baseUrl = "https://api.codecks.io/";
 
@@ -37,21 +37,19 @@ public sealed class CodecksService : IDisposable
 
 	public Card GetCard(int accountSeq)
 	{
-		string query = GetQuery("GetCard.json");
-		query = query.Replace("<ACCOUNT_SEQ>", accountSeq.ToString());
-		return LoadCardObjects(query).First();
+		return GetCards(new[] { accountSeq.ToString() }).First();
 	}
 
 	public IEnumerable<Card> GetCards(IEnumerable<string> accountSeqs)
 	{
-		string query = GetQuery("GetCard.json");
+		string query = Query.Load("GetCard.json");
 		query = query.Replace("<ACCOUNT_SEQ>", string.Join(",", accountSeqs));
 		return LoadCardObjects(query);
 	}
 
 	public string GetAccountId()
 	{
-		string query = GetQuery("GetAccountId.json");
+		string query = Query.Load("GetAccountId.json");
 		dynamic result = SendJsonRequest(query);
 		return result._root.account;
 	}
@@ -75,7 +73,9 @@ public sealed class CodecksService : IDisposable
 		{
 			var cardObject = card.Value.ToObject<Card>();
 
-			if (cardObject.Assignee != null)
+			// TODO: inconsistency: GetCard will not have the user, hence only an id returned,
+			// but GetPendingCards will use the user name.
+			if (cardObject.Assignee != null && result.user != null)
 			{
 				dynamic user = result.user[cardObject.Assignee];
 				string name = user.name;
@@ -114,8 +114,6 @@ public sealed class CodecksService : IDisposable
 		string response = UploadString(baseUrl, jsonPayload);
 		return JObject.Parse(response);
 	}
-
-	private static string GetQuery(string fileName) => QueryProvider.GetQuery(fileName);
 
 	public static string GetCardBrowserUrl(string account, string idLabel)
 	{
