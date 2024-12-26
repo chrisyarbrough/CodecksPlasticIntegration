@@ -26,7 +26,7 @@ sealed class CodecksService : IDisposable
 	/// </summary>
 	public void Login()
 	{
-		credentials.Login(client, baseUrl);
+		credentials.Login(this);
 	}
 
 	public IEnumerable<Card> GetPendingCards(Query query)
@@ -47,19 +47,11 @@ sealed class CodecksService : IDisposable
 		return LoadCardObjects(query);
 	}
 
-	public string GetAccountId()
-	{
-		string query = Query.Load("GetAccountId.json");
-		dynamic result = SendJsonRequest(query);
-		return result._root.account;
-	}
-
 	public void SetCardStatusToStarted(string cardGuid)
 	{
 		// The card id is the full-length guid, not to confuse with the accountSeq.
-		UploadString(
-			baseUrl + "dispatch/cards/update",
-			"{\"id\":\"" + cardGuid + "\",\"status\":\"started\"}");
+		UploadString("dispatch/cards/update",
+			$"{{\"id\":\"{cardGuid}\",\"status\":\"started\"}}");
 	}
 
 	private IEnumerable<Card> LoadCardObjects(string query)
@@ -73,9 +65,7 @@ sealed class CodecksService : IDisposable
 		{
 			var cardObject = card.Value.ToObject<Card>();
 
-			// TODO: inconsistency: GetCard will not have the user, hence only an id returned,
-			// but GetPendingCards will use the user name.
-			if (cardObject.Assignee != null && result.user != null)
+			if (cardObject.Assignee != null)
 			{
 				dynamic user = result.user[cardObject.Assignee];
 				string name = user.name;
@@ -89,11 +79,16 @@ sealed class CodecksService : IDisposable
 
 	private string UploadString(string url, string payload)
 	{
-		var content = new StringContent(payload, Encoding.UTF8, "application/json");
-		HttpResponseMessage response = client.PostAsync(url, content).Result;
-		RateLimitHelper.Validate(response);
-		response.EnsureSuccessStatusCode();
+		HttpResponseMessage response = Post(url, payload);
 		return response.Content.ReadAsStringAsync().Result;
+	}
+
+	public HttpResponseMessage Post(string url, string payload)
+	{
+		var content = new StringContent(payload, Encoding.UTF8, "application/json");
+		HttpResponseMessage response = client.PostAsync(baseUrl + url, content).Result;
+		HttpResponseHelper.Validate(response);
+		return response;
 	}
 
 	private dynamic SendAuthenticatedJsonRequest(string jsonPayload)
@@ -111,7 +106,7 @@ sealed class CodecksService : IDisposable
 
 	private dynamic SendJsonRequest(string jsonPayload)
 	{
-		string response = UploadString(baseUrl, jsonPayload);
+		string response = UploadString(string.Empty, jsonPayload);
 		return JObject.Parse(response);
 	}
 

@@ -3,7 +3,6 @@ namespace Xarbrough.CodecksPlasticIntegration;
 using Newtonsoft.Json;
 using System.Net;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.RegularExpressions;
 
 partial class CodecksCredentials
@@ -32,18 +31,20 @@ partial class CodecksCredentials
 		client.DefaultRequestHeaders.Add("X-Account", account);
 	}
 
-	public void Login(HttpClient client, string baseUrl)
+	public void Login(CodecksService service)
 	{
+		// Prevent rate-limiting errors when logging in multiple times.
+		// Of course, this could cause issues when the token has expired.
+		if (HasToken)
+			return;
+		
 		string json = JsonConvert.SerializeObject(new
 		{
 			email,
 			password
 		});
 
-		var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-		HttpResponseMessage response = client.PostAsync(baseUrl + "dispatch/users/login", content).Result;
-		response.EnsureSuccessStatusCode();
+		HttpResponseMessage response = service.Post("dispatch/users/login", json);
 
 		if (TryParseCookieToken(response.Headers, out string parsedToken))
 			token = parsedToken;

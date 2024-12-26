@@ -17,9 +17,6 @@ sealed class Configuration
 {
 #pragma warning disable CS0649 // Field is never assigned to, and will always have its default value
 
-	[ParamInfo("Branch Prefix", ParamType.BranchPrefix)]
-	public readonly Func<string> BranchPrefix;
-
 	[ParamInfo("E-Mail", ParamType.User)]
 	public readonly Func<string> Email;
 
@@ -28,6 +25,9 @@ sealed class Configuration
 
 	[ParamInfo("Account Name", ParamType.Text)]
 	public readonly Func<string> AccountName;
+
+	[ParamInfo("Branch Prefix", ParamType.BranchPrefix)]
+	public readonly Func<string> BranchPrefix;
 
 	[ParamInfo("Project Filter", ParamType.Text, isAdvanced: true)]
 	public readonly Func<string> ProjectFilter;
@@ -91,17 +91,15 @@ sealed class Configuration
 
 	private List<IssueTrackerConfigurationParameter> GetConfigurationParameters(IssueTrackerConfiguration config)
 	{
-		var parameters = new List<IssueTrackerConfigurationParameter>();
-		foreach (IssueTrackerConfigurationParameter parameter in CreateDefaultParameters())
-		{
-			// Overwrite the default values with the stored configuration.
-			if (TryGetValue(config, parameter.Name, out string storedValue))
-				parameter.Value = storedValue.Trim();
+		return CreateDefaultParameters()
+			.Select(parameter =>
+			{
+				// Overwrite the default values with the stored configuration.
+				if (TryGetValue(config, parameter.Name, out string storedValue))
+					parameter.Value = storedValue.Trim();
 
-			parameters.Add(parameter);
-		}
-
-		return parameters;
+				return parameter;
+			}).ToList();
 	}
 
 	private static bool TryGetValue(IssueTrackerConfiguration config, string name, out string storedValue)

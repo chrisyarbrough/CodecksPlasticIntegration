@@ -6,12 +6,16 @@
           {
             "cards({\"accountSeq\":[<ACCOUNT_SEQ>]})": [
               "accountSeq",
-              "title",
               "cardId",
-              "content",
+              "title",
               "status",
-              "assignee",
-              "deckId"
+              "content",
+              {
+                "assignee": [
+                  "name",
+                  "fullName"
+                ]
+              }
             ]
           }
         ]

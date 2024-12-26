@@ -38,15 +38,6 @@ sealed class Query
 		return query;
 	}
 
-
-	[ThreadStatic]
-	private static readonly StringBuilder stringBuilder;
-
-	static Query()
-	{
-		stringBuilder = new StringBuilder(capacity: 512);
-	}
-
 	public static string Load(string fileName)
 	{
 		return Minimize(
@@ -56,7 +47,7 @@ sealed class Query
 
 	private static string Minimize(string json)
 	{
-		stringBuilder.Clear();
+		StringBuilder stringBuilder = new();
 		foreach (char c in json.Where(c => !char.IsSeparator(c) && !char.IsControl(c)))
 		{
 			stringBuilder.Append(c);

@@ -37,7 +37,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	private CodecksService service;
 
-	private static ILog log = LogManager.GetLogger("Codecks");
+	private static readonly ILog log = LogManager.GetLogger("Codecks");
 
 	internal CodecksExtension(string name, Configuration config)
 	{
@@ -74,10 +74,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	{
 		service = BuildService(new Configuration(configuration));
 		service.Login();
-
-		// To make sure the connection actually works,
-		// send a simple request with the logged-in user.
-		return service.GetAccountId().Length > 0;
+		return service.GetPendingCards(new Query()) != null;
 	}
 
 	/// <summary>
@@ -92,7 +89,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	public void Disconnect()
 	{
-		service.Dispose();
+		service?.Dispose();
 	}
 
 	/// <summary>
@@ -221,7 +218,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		Connect();
 
 		var convertedCardIds = taskIds.Select(t => idConverter.SeqToInt(t).ToString());
-		var cards = service.GetCards(convertedCardIds);
+		IEnumerable<Card> cards = service.GetCards(convertedCardIds);
 		return Convert(cards);
 	}
 

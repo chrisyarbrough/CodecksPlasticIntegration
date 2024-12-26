@@ -38,25 +38,17 @@ public class CodecksServiceTests
 		Thread.Sleep(5000);
 	}
 
-	[Test, Order(1)]
-	public void Login()
-	{
-		service.Login();
-	}
-
 	[Test]
 	public void TestConnection()
 	{
-		// Doesn't need the X-Auth-Token.
-		string accountId = service.GetAccountId();
-		TestContext.WriteLine(accountId);
-		accountId.Should().NotBeNullOrEmpty();
+		var result = service.GetPendingCards(new Query()).ToArray();
+		TestContext.WriteLine(result.Length);
+		result.Should().NotBeEmpty();
 	}
 
 	[Test]
 	public void GetCard()
 	{
-		service.Login();
 		int accountSeq = new CardIdConverter().SeqToInt("113");
 		Card card = service.GetCard(accountSeq);
 		TestContext.WriteLine(card.ToString());
@@ -78,7 +70,6 @@ public class CodecksServiceTests
 			AssigneeEmail = assigneeEmail
 		};
 
-		service.Login();
 		Card[] cards = service.GetPendingCards(query).ToArray();
 		cards.Should().NotBeEmpty();
 	}
