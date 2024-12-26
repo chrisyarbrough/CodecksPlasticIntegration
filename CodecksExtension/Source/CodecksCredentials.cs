@@ -44,7 +44,7 @@ partial class CodecksCredentials
 			password
 		});
 
-		HttpResponseMessage response = service.Post("dispatch/users/login", json);
+		HttpResponseMessage response = service.PostJson("dispatch/users/login", json);
 
 		if (TryParseCookieToken(response.Headers, out string parsedToken))
 			token = parsedToken;

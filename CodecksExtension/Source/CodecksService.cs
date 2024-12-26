@@ -29,7 +29,7 @@ sealed class CodecksService : IDisposable
 		credentials.Login(this);
 	}
 
-	public IEnumerable<Card> GetPendingCards(Query query)
+	public IEnumerable<Card> GetPendingCards(PendingCardsQuery query)
 	{
 		string queryText = query.Build();
 		return LoadCardObjects(queryText);
@@ -50,7 +50,7 @@ sealed class CodecksService : IDisposable
 	public void SetCardStatusToStarted(string cardGuid)
 	{
 		// The card id is the full-length guid, not to confuse with the accountSeq.
-		UploadString("dispatch/cards/update",
+		PostJson("dispatch/cards/update",
 			$"{{\"id\":\"{cardGuid}\",\"status\":\"started\"}}");
 	}
 
@@ -86,20 +86,6 @@ sealed class CodecksService : IDisposable
 		}
 	}
 
-	private string UploadString(string url, string payload)
-	{
-		HttpResponseMessage response = Post(url, payload);
-		return response.Content.ReadAsStringAsync().Result;
-	}
-
-	public HttpResponseMessage Post(string url, string payload)
-	{
-		var content = new StringContent(payload, Encoding.UTF8, "application/json");
-		HttpResponseMessage response = client.PostAsync(baseUrl + url, content).Result;
-		HttpResponseHelper.Validate(response);
-		return response;
-	}
-
 	private dynamic SendAuthenticatedJsonRequest(string jsonPayload)
 	{
 		// There seem to be special cases in which 'Connect' is not
@@ -110,13 +96,18 @@ sealed class CodecksService : IDisposable
 			Login();
 
 		credentials.Authenticate(client);
-		return SendJsonRequest(jsonPayload);
+
+		HttpResponseMessage response = PostJson(string.Empty, jsonPayload);
+		string content = response.Content.ReadAsStringAsync().Result;
+		return JObject.Parse(content);
 	}
 
-	private dynamic SendJsonRequest(string jsonPayload)
+	public HttpResponseMessage PostJson(string url, string payload)
 	{
-		string response = UploadString(string.Empty, jsonPayload);
-		return JObject.Parse(response);
+		var content = new StringContent(payload, Encoding.UTF8, "application/json");
+		HttpResponseMessage response = client.PostAsync(baseUrl + url, content).Result;
+		HttpResponseHelper.Validate(response);
+		return response;
 	}
 
 	public void Dispose() => client.Dispose();

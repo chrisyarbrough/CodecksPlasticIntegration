@@ -41,7 +41,7 @@ public class CodecksServiceTests
 	[Test]
 	public void TestConnection()
 	{
-		var result = service.GetPendingCards(new Query()).ToArray();
+		var result = service.GetPendingCards(new PendingCardsQuery()).ToArray();
 		TestContext.WriteLine(result.Length);
 		result.Should().NotBeEmpty();
 	}
@@ -63,7 +63,7 @@ public class CodecksServiceTests
 	[TestCase("", "", "")]
 	public void FullQueryWithVariables(string project, string deck, string assigneeEmail)
 	{
-		var query = new Query
+		var query = new PendingCardsQuery
 		{
 			ProjectName = project,
 			DeckTitle = deck,

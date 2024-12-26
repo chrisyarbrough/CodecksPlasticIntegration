@@ -56,7 +56,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	{
 		service = BuildService(new Configuration(configuration));
 		service.Login();
-		return service.GetPendingCards(new Query()) != null;
+		return service.GetPendingCards(new PendingCardsQuery()) != null;
 	}
 
 	/// <summary>
@@ -108,7 +108,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 	private List<PlasticTask> GetTasks(string assigneeEmail)
 	{
-		Query query = new Query
+		PendingCardsQuery query = new PendingCardsQuery
 		{
 			ProjectName = config.ProjectFilter(),
 			DeckTitle = config.DeckFilter(),
