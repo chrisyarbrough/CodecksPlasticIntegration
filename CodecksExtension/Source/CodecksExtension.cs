@@ -3,7 +3,6 @@ namespace Xarbrough.CodecksPlasticIntegration;
 using Codice.Client.IssueTracker;
 using Codice.Utils;
 using System.Diagnostics;
-using log4net;
 
 /// <summary>
 /// The main interface implementation for the issue tracker extension.
@@ -17,7 +16,7 @@ using log4net;
 /// </remarks>
 class CodecksExtension : IPlasticIssueTrackerExtension
 {
-	private readonly string name;
+	public const string Name = "Codecks";
 
 	/// <summary>
 	/// Settings configured by the user in Plastic. When the extension is first started
@@ -37,30 +36,13 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	private CodecksService service;
 
-	private static readonly ILog log = LogManager.GetLogger("Codecks");
-
-	internal CodecksExtension(string name, Configuration config)
+	public CodecksExtension(Configuration config)
 	{
-		if (string.IsNullOrEmpty(name))
-			throw new ArgumentException(name);
-
 		ArgumentNullException.ThrowIfNull(config);
-
-		this.name = name;
 		this.config = config;
 	}
 
-	public string GetExtensionName() => name;
-
-	private static CodecksService BuildService(Configuration config)
-	{
-		var credentials = new CodecksCredentials(
-			config.AccountName(),
-			config.Email(),
-			CryptoServices.GetDecryptedPassword(config.Password()));
-
-		return new CodecksService(credentials);
-	}
+	public string GetExtensionName() => Name;
 
 	/// <summary>
 	/// A button in Preferences > Issue trackers.
@@ -87,10 +69,17 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		service.Login();
 	}
 
-	public void Disconnect()
+	private static CodecksService BuildService(Configuration config)
 	{
-		service?.Dispose();
+		var credentials = new CodecksCredentials(
+			config.AccountName(),
+			config.Email(),
+			CryptoServices.GetDecryptedPassword(config.Password()));
+
+		return new CodecksService(credentials);
 	}
+
+	public void Disconnect() => service?.Dispose();
 
 	/// <summary>
 	/// Called when creating a new branch from a task.
@@ -102,7 +91,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </remarks>
 	public List<PlasticTask> GetPendingTasks()
 	{
-		return GetFilteredTasks(assigneeEmail: null);
+		return GetTasks(assigneeEmail: null);
 	}
 
 	/// <summary>
@@ -114,10 +103,10 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		// The passed assigneeEmail here is the one used to sign in to Unity/PlasticSCM.
 		// If the mail used in Codecks is different, the lookup/filtering fails.
 		// Therefore, we use the email from the configuration instead.
-		return GetFilteredTasks(config.Email());
+		return GetTasks(config.Email());
 	}
 
-	private List<PlasticTask> GetFilteredTasks(string assigneeEmail)
+	private List<PlasticTask> GetTasks(string assigneeEmail)
 	{
 		Query query = new Query
 		{
@@ -125,15 +114,15 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 			DeckTitle = config.DeckFilter(),
 			AssigneeEmail = assigneeEmail
 		};
-		log.Info("Query: " + query.Build());
+
 		IEnumerable<Card> cards = service.GetPendingCards(query);
-		return Convert(cards);
+		return ConvertToTasks(cards);
 	}
 
-	private List<PlasticTask> Convert(IEnumerable<Card> cards)
-		=> cards.Select(Convert).ToList();
+	private List<PlasticTask> ConvertToTasks(IEnumerable<Card> cards)
+		=> cards.Select(ConvertToTask).ToList();
 
-	private PlasticTask Convert(Card card)
+	private PlasticTask ConvertToTask(Card card)
 	{
 		return new PlasticTask
 		{
@@ -179,12 +168,12 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	{
 		int accountSeq = idConverter.SeqToInt(taskId);
 		Card card = service.GetCard(accountSeq);
-		return Convert(card);
+		return ConvertToTask(card);
 	}
 
 	public void MarkTaskAsOpen(string taskId, string assignee)
 	{
-		// Task id example: 1w5 (display label on the Codecks card).
+		// Example: taskId 1w5 accountSeq 7 cardId dc04f44d-be21-11ef-bae2-c71a6ad339aa
 		int accountSeq = idConverter.SeqToInt(taskId);
 		Card card = service.GetCard(accountSeq);
 		service.SetCardStatusToStarted(card.CardId);
@@ -196,15 +185,28 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 	/// </summary>
 	public void OpenTaskExternally(string taskId)
 	{
-		string browserUrl = CodecksService.GetCardBrowserUrl(
-			config.AccountName(),
-			taskId);
+		string browserUrl = GetCardBrowserUrl(config.AccountName(), taskId);
 
 		Process.Start(new ProcessStartInfo
 		{
 			FileName = browserUrl,
 			UseShellExecute = true
 		});
+	}
+
+	private static string GetCardBrowserUrl(string account, string idLabel)
+	{
+		// There are several ways to display a card in the web app:
+		// Within the deck:
+		// https://mysubdomain.codecks.io/decks/105-preproduction/card/1w4-start-documentation
+
+		// Or as a single card on the hand:
+		// https://mysubdomain.codecks.io/card/1w4-start-documentation
+
+		// Conveniently, a short URL is also supported:
+		// https://mysubdomain.codecks.io/card/1w4
+
+		return $"https://{account}.codecks.io/card/{idLabel}";
 	}
 
 	/// <summary>
@@ -219,7 +221,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 
 		var convertedCardIds = taskIds.Select(t => idConverter.SeqToInt(t).ToString());
 		IEnumerable<Card> cards = service.GetCards(convertedCardIds);
-		return Convert(cards);
+		return ConvertToTasks(cards);
 	}
 
 	/// <summary>

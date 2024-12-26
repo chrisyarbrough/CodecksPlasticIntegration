@@ -19,7 +19,7 @@ namespace Xarbrough.CodecksPlasticIntegration;
 /// Daniel Berndt, one of the Codecks devs, for help. He posted this:
 /// https://gist.github.com/danielberndt/eb59230c4ac5c2fd7edaa27dfb2b2e89
 /// </remarks>
-class CardIdConverter
+sealed class CardIdConverter
 {
 	private readonly string letters;
 	private readonly int startVal;

@@ -119,20 +119,5 @@ sealed class CodecksService : IDisposable
 		return JObject.Parse(response);
 	}
 
-	public static string GetCardBrowserUrl(string account, string idLabel)
-	{
-		// There are several ways to display a card in the web app:
-		// Within the deck:
-		// https://mysubdomain.codecks.io/decks/105-preproduction/card/1w4-start-documentation
-
-		// Or as a single card on the hand:
-		// https://mysubdomain.codecks.io/card/1w4-start-documentation
-
-		// Conveniently, a short URL is also supported:
-		// https://mysubdomain.codecks.io/card/1w4
-
-		return "https://" + account + ".codecks.io/card/" + idLabel;
-	}
-
 	public void Dispose() => client.Dispose();
 }

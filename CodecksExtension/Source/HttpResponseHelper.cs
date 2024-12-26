@@ -4,7 +4,7 @@ using log4net;
 
 static class HttpResponseHelper
 {
-	private static readonly ILog log = LogManager.GetLogger("Codecks");
+	private static readonly ILog log = LogManager.GetLogger(CodecksExtension.Name);
 
 	public static void Validate(HttpResponseMessage response)
 	{
@@ -23,7 +23,8 @@ static class HttpResponseHelper
 				log.Error($"Rate limit exceeded: {remaining}/{limit}, Reset: {reset}");
 			}
 
-			// The body sometimes includes helpful information.
+			// The body sometimes includes helpful information,
+			// e.g. when a login attempt was rate-limited and not reported via the header values.
 			string body = response.Content.ReadAsStringAsync().Result;
 			throw new HttpRequestException(ex.Message + "\n" + body);
 		}

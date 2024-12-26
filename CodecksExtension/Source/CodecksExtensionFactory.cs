@@ -14,13 +14,11 @@ using Codice.Client.IssueTracker;
 // ReSharper disable once UnusedType.Global
 class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 {
-	private const string extensionName = "Codecks";
-
 	public IssueTrackerConfiguration GetConfiguration(
 		IssueTrackerConfiguration storedConfiguration)
 	{
-		var configValues = new Configuration(storedConfiguration);
-		return configValues.BuildPlasticConfiguration();
+		var config = new Configuration(storedConfiguration);
+		return config.BuildPlasticConfiguration();
 	}
 
 	public IPlasticIssueTrackerExtension GetIssueTrackerExtension(
@@ -30,10 +28,10 @@ class CodecksExtensionFactory : IPlasticIssueTrackerExtensionFactory
 
 		IPlasticIssueTrackerExtension extension =
 			new ExtensionErrorHandler(
-				new CodecksExtension(extensionName, configValues));
+				new CodecksExtension(configValues));
 
 		return extension;
 	}
 
-	public string GetIssueTrackerName() => extensionName;
+	public string GetIssueTrackerName() => CodecksExtension.Name;
 }
