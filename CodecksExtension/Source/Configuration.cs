@@ -3,7 +3,6 @@ namespace Xarbrough.CodecksPlasticIntegration;
 using Codice.Client.IssueTracker;
 using System.Collections.Generic;
 using System.Reflection;
-using Newtonsoft.Json.Linq;
 using ParamType = Codice.Client.IssueTracker.IssueTrackerConfigurationParameterType;
 
 /// <summary>
@@ -29,38 +28,28 @@ sealed class Configuration
 	[ParamInfo("Branch Prefix", ParamType.BranchPrefix)]
 	public readonly Func<string> BranchPrefix;
 
-	[ParamInfo("Project Filter", ParamType.Text, isAdvanced: true)]
+	[ParamInfo("Project Filter", ParamType.Text)]
 	public readonly Func<string> ProjectFilter;
 
-	[ParamInfo("Deck Filter", ParamType.Text, isAdvanced: true)]
+	[ParamInfo("Deck Filter", ParamType.Text)]
 	public readonly Func<string> DeckFilter;
 
 #pragma warning restore CS0649
 
 	private readonly IssueTrackerConfiguration config;
-	private readonly bool enableAdvancedFilters;
 
 	public Configuration(IssueTrackerConfiguration config)
 	{
 		this.config = config;
 
-		string appSettingsJson = Resources.ReadAllText("AppSettings.json");
-		enableAdvancedFilters = (JObject.Parse(appSettingsJson).GetValue("AdvancedFilters") ?? false).Value<bool>();
-
 		foreach (var field in GetFields())
 		{
 			var info = field.GetCustomAttribute<ParamInfo>()!;
-			field.SetValue(this, info.IsAdvanced ? GetAdvancedValue(info.Name) : () => config.GetValue(info.Name));
+			field.SetValue(this, () => config.GetValue(info.Name));
 		}
 	}
 
 	private IEnumerable<FieldInfo> GetFields() => GetType().GetFields(BindingFlags.Public | BindingFlags.Instance);
-
-	private Func<string> GetAdvancedValue(string key)
-	{
-		// If the advanced filters are disabled, return a value as if the user wanted to not set/use this parameter.
-		return () => enableAdvancedFilters ? config.GetValue(key) : string.Empty;
-	}
 
 	/// <summary>
 	/// Initializes the stored configuration managed by the Plastic client.
@@ -119,7 +108,6 @@ sealed class Configuration
 	{
 		return GetFields()
 			.Select(field => field.GetCustomAttribute<ParamInfo>()!)
-			.Where(info => !info.IsAdvanced || enableAdvancedFilters)
 			.Select(info => new IssueTrackerConfigurationParameter
 			{
 				Name = info.Name,
@@ -133,13 +121,11 @@ sealed class Configuration
 	{
 		public readonly string Name;
 		public readonly ParamType Type;
-		public readonly bool IsAdvanced;
 
-		public ParamInfo(string name, ParamType type, bool isAdvanced = false)
+		public ParamInfo(string name, ParamType type)
 		{
 			Name = name;
 			Type = type;
-			IsAdvanced = isAdvanced;
 		}
 	}
 }
