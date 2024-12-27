@@ -15,9 +15,9 @@ Adds support for the [Codecks](https://www.codecks.io/) issue tracker to [Plasti
 For details about what a task and issue tracking extension can do, see
 this [guide](https://docs.plasticscm.com/extensions/plastic-scm-version-control-task-and-issue-tracking-guide).
 
-# Getting Started - User Setup
+## Getting Started - User Setup
 
-1) Assuming you already use PlasticSCM or Unity DevOps.
+1) Install Unity DevOps Version Control (PlasticSCM).
    The client can be downloaded [here](https://www.plasticscm.com/download).
 
 2) [Download](https://github.com/chrisyarbrough/CodecksPlasticIntegration/releases)
@@ -38,7 +38,7 @@ this [guide](https://docs.plasticscm.com/extensions/plastic-scm-version-control-
    Add the following line to the file:
    > Codecks=extensions/codecks/CodecksExtension.dll
 
-   You will need admin permissions to edit this file.
+   You may need admin permissions to edit this file.
 
 5) Open the preferences in the PlasticSCM GUI and configure the Codecks extension with your personal settings.
 
@@ -46,28 +46,36 @@ this [guide](https://docs.plasticscm.com/extensions/plastic-scm-version-control-
 
    Note that 'Account Name' is the subdomain of your organization used for the Codecks web frontend.
 
+   | Property       | Required | Description                                                                                                              |
+      |----------------|----------|--------------------------------------------------------------------------------------------------------------------------|
+   | E-Mail         | yes      | The mail of your Codecks user.                                                                                           |
+   | Password       | yes      | The password for the Codecks user. Used to fetch an authentication token.                                                |
+   | Branch Prefix  |          | When creating a branch from a task, the Codecks card id is always included. Use this property to add an optional prefix. |
+   | Account Name   | yes      | The subdomain of your Codecks organization.                                                                              |
+   | Project Filter |          | The name of a Codecks project to use as a filter or empty if all projects should be considered.                          |
+   | Deck Filter    |          | The title of a deck to use as a filter or empty if all decks should be considered.                                       |
+
+## Query Editing (Advanced)
+
+In the Codecks extension directory, there's directory with json queries.
+These queries are used to fetch cards from the Codecks API.
+In case the API changes before this extension is updates, or if you have special requirements,
+you might be able to adjust these queries for your use-case.
+
 ---
 
-# Developer Setup
+## Developer Setup
 
-## Building from Source
+### Building from Source
 
 **Prerequisites**
 
 - .NET 7.0 SDK
-- PlasticSCM 10.0.16.6505 (or newer)
-
-Now testing: 11.0.16.9080
+- PlasticSCM (tested with 11.0.16.9080)
 
 Of course the plugin should work in other (if not all) versions of PlasticSCM, but this specific one is known to work.
-The beta GUI (PlasticX) of the same version is also supported internally.
-At the time of writing, PlasticX allows creating a new branch from a task, but doesn't show task info anywhere else.
 
-The codecks extension depends on libraries provided by PlasticSCM (e.g. issuetrackerinterface.dll).
-In theory, these dependencies should be provided by the host process (the Plastic GUI), however,
-the new beta GUI PlasticX does not load the utils.dll. For this reason, it was decided to
-simply copy-paste the libraries during development and deploy them right next to the extension.
-See the 'Libraries' folder in the repository.
+The codecks extension depends on libraries provided by the PlasticSCM host, see the _Libraries_ directory.
 
 The project solution includes a "Start Host" configuration which builds the extension and copies it directly to
 the default PlasticSCM installation path and also launches the GUI client for interactive testing and debugging.
@@ -92,21 +100,19 @@ On Windows, right-click the folder, select _properties_ and allow 'write' permis
 
 ## Testing
 
-For the regular tests:
+To run the regular unit tests:
 
 ```bash
 dotnet test
 ```
 
-To run the _CodecksServiceTest_ configure your dotnet user secrets like so:
+To run the (end-to-end) _CodecksServiceTests_ configure your dotnet user secrets like so:
 
 ```bash
-dotnet user-secrets set key value
+dotnet user-secrets set <key> <value>
 ```
 
-with the following info:
-
-| Key              | Description                                                         |
+| Key              | Value Description                                                   |
 |------------------|---------------------------------------------------------------------|
 | Codecks:Email    | Email address of your Codecks account.                              |
 | Codecks:Password | Password associated with the Codecks email.                         |
