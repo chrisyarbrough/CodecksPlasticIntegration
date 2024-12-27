@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<Description>Adds support for the Codecks issue tracker to PlasticSCM/Unity DevOps Version Control.</Description>
-		<AssemblyVersion>1.5</AssemblyVersion>
+		<AssemblyVersion>2.0</AssemblyVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>
