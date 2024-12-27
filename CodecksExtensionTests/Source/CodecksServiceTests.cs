@@ -56,18 +56,18 @@ public class CodecksServiceTests
 	}
 
 	[Test]
-	[TestCase("CodecksPlasticIntegration", "Bugs", "***REMOVED***")]
-	[TestCase("CodecksPlasticIntegration", "", "***REMOVED***")]
-	[TestCase("CodecksPlasticIntegration", "", "")]
-	[TestCase("", "Bugs", "***REMOVED***")]
-	[TestCase("", "", "")]
-	public void FullQueryWithVariables(string project, string deck, string assigneeEmail)
+	[TestCase("CodecksPlasticIntegration", "Bugs", true)]
+	[TestCase("CodecksPlasticIntegration", "", true)]
+	[TestCase("CodecksPlasticIntegration", "", false)]
+	[TestCase("", "Bugs", true)]
+	[TestCase("", "", false)]
+	public void FullQueryWithVariables(string project, string deck, bool useEmail)
 	{
 		var query = new PendingCardsQuery
 		{
 			ProjectName = project,
 			DeckTitle = deck,
-			AssigneeEmail = assigneeEmail
+			AssigneeEmail = useEmail ? email : null
 		};
 
 		Card[] cards = service.GetPendingCards(query).ToArray();
