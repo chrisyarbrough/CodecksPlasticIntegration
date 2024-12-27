@@ -29,9 +29,6 @@
 			<HintPath>..\Libraries\log4net.dll</HintPath>
 			<Private>False</Private> <!-- Don't copy to output -->
 		</Reference>
-		<Reference Include="utils">
-			<HintPath>..\Libraries\utils.dll</HintPath>
-		</Reference>
 	</ItemGroup>
 
 	<ItemGroup>

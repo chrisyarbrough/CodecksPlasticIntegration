@@ -74,6 +74,7 @@ class CodecksExtension : IPlasticIssueTrackerExtension
 		var credentials = new CodecksCredentials(
 			config.AccountName(),
 			config.Email(),
+			// From utils.dll (which is not included in the PlasticCSM host).
 			CryptoServices.GetDecryptedPassword(config.Password()));
 
 		return new CodecksService(credentials);
